@@ -82,7 +82,7 @@
 ### 빠른 시작
 
 ```bash
-git clone <YOUR_REPOSITORY_URL>
+git clone https://github.com/jingi723/etf-discovery-harness.git
 cd etf-discovery-harness
 cp .env.example .env
 ```
