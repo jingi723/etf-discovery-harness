@@ -1,0 +1,28 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Claude Code local state
+.claude/settings.local.json
+
+# Runtime artifacts
+_workspace/
+_workspace_*/
+output/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# Logs and caches
+*.log
+.cache/
