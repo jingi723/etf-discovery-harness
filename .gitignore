@@ -16,6 +16,9 @@ __pycache__/
 *.py[cod]
 .venv/
 
+# Personal notes (not for GitHub)
+private/
+
 # Secrets and local configuration
 .env
 .env.*
