@@ -118,7 +118,13 @@ Partial re-runs: "UI again" starts at 13.5a (reusing upstream output), "HTML onl
 ### Phase 14: completion
 1. Copy `_workspace/13_reports/` to `output/{run_date}/`, and `_workspace/15_ui/`'s ui_payload.json and html/* to `output/{run_date}/ui/`. Copy any selected PDF/PNG/DOCX to `output/{run_date}/deliverables/`.
 2. Keep `_workspace/` (audit trail).
-3. Report to the user: the final candidates and their states, the areas with missing data or low confidence, the QA result, and the path to the deliverable they can share. Close by inviting feedback: "Anything in the result or the workflow worth improving?"
+3. Report to the user: the final candidates and their states, the areas with missing data or low confidence, the QA result, the run's total agent tokens from `agent_costs.json`, and the path to the deliverable they can share. Close by inviting feedback: "Anything in the result or the workflow worth improving?"
+
+## Record what the run costs
+
+After each agent returns, append its usage to `_workspace/agent_costs.json` — `{phase, agent, fanout, tokens, tool_uses, duration_ms}`, taken from the Agent tool's own usage report. Report the total in the Phase 14 completion summary alongside the results.
+
+This is the only place the cost of a run is visible: an agent cannot see its own token count, and the fan-out stages are where a run gets expensive. Measured figures live in `docs/RUN_COST.md`.
 
 ## Prompt rules for agent calls
 

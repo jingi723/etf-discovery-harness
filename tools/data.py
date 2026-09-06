@@ -18,6 +18,27 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+# Call counter. FMP's free tier caps daily requests, so knowing how many a run
+# spends matters more than the wall-clock time. Set ETF_API_LOG to a path to
+# also append one JSON line per call.
+CALLS: dict[str, int] = {}
+_LOG = os.environ.get("ETF_API_LOG")
+
+
+def _count(provider, endpoint):
+    key = f"{provider}:{endpoint}"
+    CALLS[key] = CALLS.get(key, 0) + 1
+    if _LOG:
+        with open(_LOG, "a") as f:
+            f.write(json.dumps({"t": round(time.time()), "provider": provider,
+                                "endpoint": endpoint}) + "\n")
+
+
+def call_summary():
+    """{'fmp:quote': 3, ...} plus the total — for a run's cost record."""
+    return {"by_endpoint": dict(CALLS), "total": sum(CALLS.values())}
+
+
 FMP = "https://financialmodelingprep.com/stable"
 TOSS = "https://openapi.tossinvest.com"
 _TOKEN_CACHE = Path(os.environ.get("TOSS_TOKEN_CACHE", "/tmp/.toss_token.json"))
@@ -58,6 +79,7 @@ def fmp(endpoint, **params):
     if not key or key.startswith("replace"):
         raise RuntimeError("FMP_API_KEY is not set — see docs/API_SETUP.md")
     qs = urllib.parse.urlencode({**params, "apikey": key})
+    _count("fmp", endpoint)
     return _get(f"{FMP}/{endpoint}?{qs}")
 
 
@@ -135,6 +157,7 @@ def toss(path, **params):
     tok = toss_token()
     qs = urllib.parse.urlencode(params)
     url = f"{TOSS}/api/v1/{path}" + (f"?{qs}" if qs else "")
+    _count("toss", path.split("/")[0] if "/" not in path else path.split("/")[-1])
     return _get(url, headers={"Authorization": f"Bearer {tok}"})["result"]
 
 

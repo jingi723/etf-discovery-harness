@@ -169,6 +169,11 @@ Selected automatically by which environment variables are set. Handles gzip, 429
 backoff, and disk-caches the Toss OAuth token (Toss issues **one valid token per
 client**, so a fresh token silently invalidates the one another process is holding).
 
+It also counts your API calls, because the free tier's daily cap binds long before
+anything else does — `data.call_summary()` at any point, or `ETF_API_LOG=path.jsonl`
+for a log that survives across processes. A plain `score.py` run costs 3 calls; with
+`--holdings` it costs 15. See [docs/RUN_COST.md](docs/RUN_COST.md).
+
 ## Repository layout
 
 ```text
@@ -191,6 +196,7 @@ client**, so a fresh token silently invalidates the one another process is holdi
 ├── examples/                           # a complete run, kept as a snapshot
 ├── docs/
 │   ├── API_SETUP.md                    # FMP and Toss setup, coverage matrix
+│   ├── RUN_COST.md                     # measured tokens and API calls per run
 │   ├── METHODOLOGY.md                  # how a judgment is actually produced
 │   └── HARNESS_DESIGN.md               # architecture and data contracts
 └── CLAUDE.md                           # trigger pointers and change log
@@ -232,7 +238,9 @@ market regime
 The three grading axes are deliberately forbidden from reading each other. A great
 theme story must not quietly upgrade a stretched multiple.
 
-Details: [docs/HARNESS_DESIGN.md](docs/HARNESS_DESIGN.md).
+Details: [docs/HARNESS_DESIGN.md](docs/HARNESS_DESIGN.md). What it costs to run:
+[docs/RUN_COST.md](docs/RUN_COST.md) — about 100k tokens per agent, measured, with the
+two config knobs that actually move the total.
 
 ## Design principles
 
