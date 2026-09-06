@@ -182,3 +182,52 @@ Failed hypotheses are the most reusable output here. Three from this repo's own 
   publishes only qualitative language, SMIC's 93.7% is a scope mismatch, and every
   candidate figure was six months stale. FRED's series returns 403 without a key.
   Shelved with the reason recorded, so it is not re-proposed blind.
+
+---
+
+## How reproducible is any of this?
+
+Two agents scored the same 12 holdings from the same data without seeing each other's
+output — SMH and SOXX overlap, and their financial scorers ran in parallel. That is a
+free reproducibility test, and it is worth knowing the answer before trusting a grade.
+
+| Gap between the two independent scorers | Holdings |
+|---|---:|
+| identical | 6 |
+| 1 notch | 5 |
+| 2 notches | 1 |
+
+**11 of 12 within one notch, and the ETF-level grades were unaffected** — both came out
+B+, both reproducing exactly against `weighted_grade.py`. The weighted average absorbs
+per-holding noise of that size.
+
+The widest gap was not a data difference. Both scorers pulled identical figures for
+Applied Materials — revenue +4.4%, operating margin 30.5%, D/E 0.29 — and split on
+whether +4.4% growth counts as "one weak area". The rubric had not said, so it now
+does: growth below 0% is weak, 0–5% is modest. Anchoring that boundary is what turns a
+judgement call back into a rule.
+
+**Read grades at the level they were measured.** A single holding's grade carries about
+a notch of noise. The ETF-level grade, which is what the harness actually reports, does
+not.
+
+## A known limitation: purity is a weak filter
+
+Phase 8.5 picks which ETFs get deep-scored using `purity_pct` alone, and two cases in
+one run showed the metric hiding what matters.
+
+**Concentration inflates it.** Chain-stage coverage ran opposite to purity across four
+AI-accelerator candidates: SMH ranked first on purity (55.0%) while holding nothing at
+all in two of the theme's five value-chain stages, and AIQ ranked third (44.7%) as the
+only fund covering all five. High purity meant weight piled into one stage, not that the
+fund held the theme well.
+
+**It can be near-perfect with zero exposure to the theme's own bottleneck.** WCLD maps at
+99.99% purity because cloud software is one of the theme's defined stages — but that
+theme's evidence names power and grid interconnection as the binding constraint, and
+WCLD holds no hyperscaler, no data-center REIT, and no power name.
+
+A coverage-aware filter would have picked differently in one of four slots. Whether it
+would have picked *better* is not established, so the filter is unchanged and this is
+recorded as a limitation rather than fixed. Read `purity_pct` alongside the chain
+breakdown, never alone.

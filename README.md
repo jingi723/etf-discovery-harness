@@ -74,7 +74,7 @@ the coverage log, and an interactive ETF detail page you can open in a browser.
 
 ## The tools
 
-Four scripts you can run without Claude Code at all. They are the deterministic core;
+Five scripts you can run without Claude Code at all. They are the deterministic core;
 the agents call the same logic and explain the output.
 
 ### `tools/score.py` — seven indicators, three horizons
@@ -182,7 +182,8 @@ for a log that survives across processes. A plain `score.py` run costs 3 calls; 
 │   ├── data.py                         # FMP + Toss Securities providers
 │   ├── score.py                        # 7 indicators × 3 horizons
 │   ├── validate.py                     # pattern backtester
-│   └── render.py                       # ui_payload.json → static HTML
+│   ├── render.py                       # ui_payload.json → static HTML
+│   └── check_workspace.py              # validates run output against the contract
 ├── .claude/
 │   ├── agents/                         # 15 specialised agent definitions
 │   └── skills/
@@ -239,8 +240,8 @@ The three grading axes are deliberately forbidden from reading each other. A gre
 theme story must not quietly upgrade a stretched multiple.
 
 Details: [docs/HARNESS_DESIGN.md](docs/HARNESS_DESIGN.md). What it costs to run:
-[docs/RUN_COST.md](docs/RUN_COST.md) — about 100k tokens per agent, measured, with the
-two config knobs that actually move the total.
+[docs/RUN_COST.md](docs/RUN_COST.md) — measured across all ten agent types, plus the
+optimisations that were tried and did not work.
 
 ## Design principles
 
