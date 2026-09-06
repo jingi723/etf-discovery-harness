@@ -119,8 +119,13 @@ def score_value(symbol, sub_sector=None):
         pe = ratios_pe(symbol)
     except Exception:
         return None
-    if pe is None or pe < 0:
-        return 0
+    # No P/E data is not the same as a bad P/E. FMP's ratios-ttm returns an
+    # empty object for every ETF, so scoring that 0 silently docked every fund
+    # 15 points at the long horizon. Missing stays missing.
+    if pe is None:
+        return None
+    if pe < 0:
+        return 0        # genuinely lossmaking — a real signal, not a gap
     if not band:
         return 75 if 15 <= pe <= 40 else 50 if pe <= 60 else 25 if pe <= 90 else 0
     lo, hi = band
@@ -141,10 +146,9 @@ def score(symbol, horizon="swing", macro=50, sub_sector=None, benchmark="SPY"):
     b = data.prices(benchmark, 30)
     bench_20d = 100 * (b[0]["close"] / b[20]["close"] - 1)
     t = technicals(symbol, bench_20d)
-    v = score_value(symbol, sub_sector)
     parts = {
         "macro": macro,                      # supplied by the caller, see note
-        "value": 50 if v is None else v,
+        "value": score_value(symbol, sub_sector),
         "trend": score_trend(t),
         "momentum": score_momentum(t),
         "position": score_position(t, horizon),
@@ -152,8 +156,12 @@ def score(symbol, horizon="swing", macro=50, sub_sector=None, benchmark="SPY"):
         "flow": score_flow(t),
     }
     w = WEIGHTS[horizon]
-    total = sum(parts[k] * w[k] for k in w) / 100
-    return total, parts, w, t
+    # Renormalise over the indicators that actually have data, the way
+    # weighted_grade.py does. Never substitute a number for a gap.
+    have = [k for k in w if w[k] and parts[k] is not None]
+    cov = sum(w[k] for k in have)
+    total = sum(parts[k] * w[k] for k in have) / cov if cov else None
+    return total, parts, w, t, cov
 
 
 def main():
@@ -172,13 +180,22 @@ def main():
                     help="also score the ETF's top constituents")
     a = ap.parse_args()
 
-    total, parts, w, t = score(a.symbol, a.horizon, a.macro, a.sub_sector, a.benchmark)
+    total, parts, w, t, cov = score(a.symbol, a.horizon, a.macro,
+                                    a.sub_sector, a.benchmark)
     print(f"\n{a.symbol}  {t['date']}  {t['close']:,.2f} ({t['chg']:+.2f}%)")
-    print(f"{light(total)} {a.horizon} score {total:.1f}/100\n")
+    if total is None or cov < 60:
+        print(f"⚪ {a.horizon} score suspended — only {cov}% of weight has data\n")
+    else:
+        note = "" if cov == 100 else f"  ({cov}% of weight has data)"
+        print(f"{light(total)} {a.horizon} score {total:.1f}/100{note}\n")
     for k in w:
-        if w[k]:
+        if not w[k]:
+            continue
+        if parts[k] is None:
+            print(f"  {k:9}   n/a  (weight {w[k]:>2}%) -> excluded, renormalised")
+        else:
             print(f"  {k:9} {parts[k]:>5.0f} pt  (weight {w[k]:>2}%) -> "
-                  f"{parts[k]*w[k]/100:>5.2f}  {light(parts[k])}")
+                  f"{parts[k]*w[k]/cov*100/100:>5.2f}  {light(parts[k])}")
     print(f"\n  ma20 {t['ma20']:,.2f} / ma60 {t['ma60']:,.2f} / ma200 {t['ma200']:,.2f}")
     print(f"  20d {t['d20']:+.1f}%  rs {t['rs']:+.1f}pp  pos60 {t['pos60']:.0f}%  "
           f"from-high {t['from_high']:+.1f}%  vol {t['vol_ratio']:.2f}x")
@@ -213,6 +230,30 @@ def main():
                   f"(breadth: this is what separates a real move from a bounce)")
 
 
+def demo():
+    """Self-check: a missing indicator must be excluded and renormalised,
+    never substituted with a number."""
+    w = WEIGHTS["long"]
+    parts = {k: 50 for k in w}
+    have = [k for k in w if w[k] and parts[k] is not None]
+    assert sum(parts[k] * w[k] for k in have) / sum(w[k] for k in have) == 50
+
+    parts["value"] = None                      # the ETF case
+    have = [k for k in w if w[k] and parts[k] is not None]
+    cov = sum(w[k] for k in have)
+    assert cov == 85, cov
+    # all remaining indicators are 50, so the renormalised total is still 50 —
+    # a gap must not drag the score the way scoring it 0 used to
+    assert sum(parts[k] * w[k] for k in have) / cov == 50
+
+    assert score_value("X", "miner") == 50, "cyclicals skip the P/E"
+    assert PE_BANDS["memory"] == (8, 15)
+    print("ok")
+
+
 if __name__ == "__main__":
-    data.load_env()
-    main()
+    if "--self-check" in sys.argv:
+        demo()
+    else:
+        data.load_env()
+        main()

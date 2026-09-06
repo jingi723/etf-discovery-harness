@@ -83,15 +83,15 @@ the agents call the same logic and explain the output.
 $ python3 tools/score.py SOXX --horizon swing
 
 SOXX  2026-09-04  519.86 (+3.52%)
-🟡 swing score 40.0/100
+🟡 swing score 42.1/100  (95% of weight has data)
 
-  macro        50 pt  (weight 10%) ->  5.00  🟡
-  value         0 pt  (weight  5%) ->  0.00  🔵
-  trend        25 pt  (weight 25%) ->  6.25  🟢
-  momentum     40 pt  (weight 20%) ->  8.00  🟡
-  position     75 pt  (weight 20%) -> 15.00  🟠
-  rs           25 pt  (weight 15%) ->  3.75  🟢
-  flow         40 pt  (weight  5%) ->  2.00  🟡
+  macro        50 pt  (weight 10%) ->  5.26  🟡
+  value       n/a  (weight  5%) -> excluded, renormalised
+  trend        25 pt  (weight 25%) ->  6.58  🟢
+  momentum     40 pt  (weight 20%) ->  8.42  🟡
+  position     75 pt  (weight 20%) -> 15.79  🟠
+  rs           25 pt  (weight 15%) ->  3.95  🟢
+  flow         40 pt  (weight  5%) ->  2.11  🟡
 
   ma20 523.42 / ma60 550.72 / ma200 431.53
   20d -4.3%  rs -3.9pp  pos60 29%  from-high -20.7%  vol 0.68x
@@ -122,6 +122,11 @@ roll over is a retracement, not a bottom.
 Colour bands follow the Korean market convention, where **red is positive**:
 `🔴 80+ / 🟠 60–80 / 🟡 40–60 / 🟢 20–40 / 🔵 0–20`. The score is a measure of how many
 conditions are met — not an expected return.
+
+An indicator with no data is excluded and the remaining weights are renormalised, with
+the coverage stated — never filled in with a neutral guess. Below 60% coverage the score
+is suspended outright. (ETFs have no P/E of their own, which is why `value` reads `n/a`
+above; the pipeline scores an ETF's valuation from its holdings instead.)
 
 ### `tools/validate.py` — backtest before you believe
 

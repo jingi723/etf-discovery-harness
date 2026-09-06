@@ -49,6 +49,7 @@ on `main` may be re-stated there rather than merged.
 
 ```bash
 python3 tools/validate.py --self-check     # must print "ok"
+python3 tools/score.py --self-check        # must print "ok"
 python3 tools/score.py SOXX --horizon swing
 ```
 
