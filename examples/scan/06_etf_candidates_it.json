@@ -1,0 +1,110 @@
+{
+  "artifact": "etf_candidates",
+  "as_of_date": "2026-09-06",
+  "generated_by": "etf-candidate-finder",
+  "sources": [
+    {"source_name": "FMP (Financial Modeling Prep) — quote/etf/info", "source_type": "vendor", "url_or_reference": "https://financialmodelingprep.com/stable/etf/info?symbol=XLK|SMH|RSPT (via tools/data.py)", "as_of_date": "2026-09-05", "retrieved_at": "2026-09-06", "reliability_tier": "secondary", "used_for": "existence confirmation (quote), AUM, expense ratio, inception date, holdings count, and replication-technique description for XLK, SMH, RSPT", "notes": "FMP's own description text states XLK and RSPT each track their index 'by using full replication technique' — used as the structural evidence that these are physically replicated, non-synthetic funds"},
+    {"source_name": "ETF Research Center (etfrc.com) — Fund Focus pages", "source_type": "vendor", "url_or_reference": "https://www.etfrc.com/XLK ; https://www.etfrc.com/SMH ; https://www.etfrc.com/RSPT", "as_of_date": "2026-09-06", "retrieved_at": "2026-09-06", "reliability_tier": "secondary", "used_for": "average bid/ask spread and total-cost-of-ownership figures for all three candidates", "notes": "premium/discount and tracking-error tabs on this site are gated behind a paid subscription and were not accessible — recorded as missing"},
+    {"source_name": "VanEck / web search summary of SMH prospectus language", "source_type": "issuer", "url_or_reference": "https://www.vaneck.com/us/en/investments/semiconductor-etf-smh/ (fetch blocked by redirect loop; confirmed via search snippet of the same page and fact sheet)", "as_of_date": "2026-09-06", "retrieved_at": "2026-09-06", "reliability_tier": "secondary", "used_for": "confirms SMH invests at least 80% of assets directly in index-constituent securities (physical replication, not swap-based), no leverage/options structure, holdings published daily", "notes": "direct WebFetch to the VanEck page failed with a redirect loop; relied on the search engine's extracted snippet of the same official page and the linked fact sheet filename instead of a direct primary fetch — confidence lowered accordingly"}
+  ],
+  "source_conflicts": [],
+  "confidence": "medium",
+  "coverage": {
+    "available": ["ticker existence", "issuer", "tracked index", "AUM", "expense ratio", "inception/listing date", "holdings count", "replication style (physical, all three)", "leverage/inverse status", "option-overlay status", "average bid/ask spread", "holdings disclosure frequency"],
+    "missing": ["premium/discount to NAV (all three)", "tracking error (all three)", "tracking difference (all three)", "lp_quality (all three — not disclosed by any source checked)"],
+    "impact_of_missing": "All three candidates show very tight average spreads (XLK/SMH <1bp, RSPT ~2bp) from a vendor source, so the trading-cost side of the structure gate is unlikely to fail on the missing fields. But premium/discount and tracking error stayed unverified because the vendor page gates them behind a paid tier — a downstream deep-dive on any of these three tickers should retry FMP or issuer fact sheets for those two fields rather than treating them as confirmed absent."
+  },
+  "payload": {
+    "sector": "information technology",
+    "scan_note": "Phase S sector scan (run_config.output_scope=scan). These 3 funds represent the sector for cross-sector comparison, not a single theme's value chain — representativeness across replication styles was prioritized over holding-level purity.",
+    "candidates": [
+      {
+        "name": "State Street Technology Select Sector SPDR ETF",
+        "ticker": "XLK",
+        "market": "NYSE Arca (AMEX)",
+        "issuer": "State Street Global Advisors (SPDR)",
+        "index": "Technology Select Sector Index",
+        "style": "passive",
+        "holdings_count": 73,
+        "aum": "USD 121.08B",
+        "avg_volume": "10,550,973 shares/day",
+        "expense_ratio": "0.08%",
+        "type": "broad index",
+        "notes": "Cap-weighted, full-GICS-technology-sector fund (also carries a small energy sleeve per GICS reclassification, ~0.1% of weight); representative as the sector's broad passive benchmark. Cap-weighting concentrates the fund in a handful of mega-caps (NVDA/AAPL/MSFT), which is a known feature of this type rather than a defect.",
+        "structure_trading": {
+          "listing_date": "1998-12-16",
+          "leverage_inverse": false,
+          "single_stock_leverage": false,
+          "synthetic_swap": false,
+          "option_strategy": false,
+          "currency_hedged": false,
+          "spread_pct": 0.01,
+          "premium_discount_pct": null,
+          "tracking_error": null,
+          "tracking_difference": null,
+          "real_cost_notes": "Expense ratio 0.08% plus an average spread of <1bp (~0.01% of price) per ETF Research Center (2026-09-06) — among the cheapest all-in-cost sector funds in the market; TCO figure itself not disclosed on the free tier.",
+          "lp_quality": null,
+          "holdings_transparency": "daily"
+        }
+      },
+      {
+        "name": "VanEck Semiconductor ETF",
+        "ticker": "SMH",
+        "market": "NASDAQ",
+        "issuer": "VanEck",
+        "index": "MVIS US Listed Semiconductor 25 Index",
+        "style": "passive",
+        "holdings_count": 26,
+        "aum": "USD 66.62B",
+        "avg_volume": "10,481,979 shares/day",
+        "expense_ratio": "0.35%",
+        "type": "pure theme",
+        "notes": "The focused/sub-industry representative — concentrated purely in semiconductor manufacturing and equipment names (25 largest US-listed semis) rather than the whole IT sector; top holdings NVDA (~21.7%), TSM, AVGO, AMD, ASML.",
+        "structure_trading": {
+          "listing_date": "2011-12-20",
+          "leverage_inverse": false,
+          "single_stock_leverage": false,
+          "synthetic_swap": false,
+          "option_strategy": false,
+          "currency_hedged": false,
+          "spread_pct": 0.01,
+          "premium_discount_pct": null,
+          "tracking_error": null,
+          "tracking_difference": null,
+          "real_cost_notes": "Expense ratio 0.35% plus an average spread of <1bp (~0.01% of price) per ETF Research Center (2026-09-06); total cost of ownership reported there at 36bp vs a 50bp peer average.",
+          "lp_quality": null,
+          "holdings_transparency": "daily"
+        }
+      },
+      {
+        "name": "Invesco S&P 500 Equal Weight Technology ETF",
+        "ticker": "RSPT",
+        "market": "NYSE Arca (AMEX)",
+        "issuer": "Invesco",
+        "index": "S&P 500 Equal Weight Information Technology Index",
+        "style": "passive",
+        "holdings_count": 74,
+        "aum": "USD 5.85B",
+        "avg_volume": "626,230 shares/day",
+        "expense_ratio": "0.40%",
+        "type": "highly diversified",
+        "notes": "The structurally-different representative: same S&P 500 IT constituent universe as a cap-weighted fund but equal-weighted, which materially dilutes the mega-cap concentration seen in XLK and spreads exposure across mid/smaller names in the sector.",
+        "structure_trading": {
+          "listing_date": "2006-11-01",
+          "leverage_inverse": false,
+          "single_stock_leverage": false,
+          "synthetic_swap": false,
+          "option_strategy": false,
+          "currency_hedged": false,
+          "spread_pct": 0.02,
+          "premium_discount_pct": null,
+          "tracking_error": null,
+          "tracking_difference": null,
+          "real_cost_notes": "Expense ratio 0.40% plus an average spread of ~2bp (0.02% of price, range 2-4bp) per ETF Research Center (2026-09-06); TCO reported there at 42bp vs a 63bp peer average. Lower AUM/volume than XLK or SMH but still comfortably above the run's USD 100M / USD 5M-per-day structure-gate thresholds.",
+          "lp_quality": null,
+          "holdings_transparency": "daily"
+        }
+      }
+    ]
+  }
+}

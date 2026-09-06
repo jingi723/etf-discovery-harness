@@ -1,0 +1,95 @@
+{
+  "artifact": "sector_scores",
+  "as_of_date": "2026-09-06",
+  "generated_by": "sector-scorer",
+  "sources": [
+    {"source_name": "01_market_regime.json (market-regime-analyst output)", "source_type": "other", "url_or_reference": "internal calculation — _workspace/01_market_regime.json", "as_of_date": "2026-09-06", "retrieved_at": "2026-09-06", "reliability_tier": "secondary", "used_for": "macro_fit basis (favorable_sector_types) and earnings_momentum basis (sector_earnings_outlook) for both sectors", "notes": ""},
+    {"source_name": "247/7 Wall St. / Yahoo Finance — \"How SPDR's XLK Tech ETF Beat the S&P 500 by 35 Points\"", "source_type": "media", "url_or_reference": "https://247wallst.com/investing/2026/02/18/how-spdrs-xlk-tech-etf-beat-the-sp-500-by-35-points/", "as_of_date": "2026-02-18", "retrieved_at": "2026-09-06", "reliability_tier": "secondary", "used_for": "XLK 5-year and 10-year outperformance vs SPY context for relative_strength (IT)", "notes": ""},
+    {"source_name": "stockanalysis.com — State Street Technology Select Sector SPDR ETF (XLK)", "source_type": "vendor", "url_or_reference": "https://stockanalysis.com/etf/xlk/", "as_of_date": "2026-09-06", "retrieved_at": "2026-09-06", "reliability_tier": "secondary", "used_for": "XLK YTD return +27.45% vs SPY +8.10% for relative_strength (IT)", "notes": "search did not return an exact September-dated snapshot; treated as a near-term YTD figure, confidence lowered accordingly"},
+    {"source_name": "worldperatio.com — S&P 500 Information Technology Sector P/E Ratio", "source_type": "vendor", "url_or_reference": "https://worldperatio.com/sector/sp-500-information-technology/", "as_of_date": "2026-09-02", "retrieved_at": "2026-09-06", "reliability_tier": "secondary", "used_for": "S&P 500 IT sector P/E 32.88 for valuation_burden (IT)", "notes": ""},
+    {"source_name": "GuruFocus / StockCircle — XLK P/E Ratio history", "source_type": "vendor", "url_or_reference": "https://stockcircle.com/stocks/xlk/pe-ratio", "as_of_date": "2026-09-06", "retrieved_at": "2026-09-06", "reliability_tier": "secondary", "used_for": "XLK current P/E 33.02x vs 5-year historical band [29.48, 36.41] for valuation_burden (IT)", "notes": ""},
+    {"source_name": "ETF Trends / CryptoBriefing — \"Technology equity funds pull in $195B in inflows\" / 2026 ETF inflow leaders", "source_type": "media", "url_or_reference": "https://www.etftrends.com/equity-etf-content-hub/2026-etf-inflows-leading-group/", "as_of_date": "2026-08-15", "retrieved_at": "2026-09-06", "reliability_tier": "secondary", "used_for": "Global technology fund inflows +$131B YTD through mid-Aug 2026, doubling over the prior four months, for flows_positioning (IT)", "notes": "same search surfaced that Energy moved to the top of the sector-flow leaderboard for the first time in years — noted as a relative-momentum caveat for IT flows"},
+    {"source_name": "Intellectia.ai / TradeThePool — AI chip stock selloff and crowded-trade coverage", "source_type": "media", "url_or_reference": "https://intellectia.ai/blog/ai-chip-stocks-volatility-june-2026", "as_of_date": "2026-06-22", "retrieved_at": "2026-09-06", "reliability_tier": "tertiary", "used_for": "Philadelphia Semiconductor Index +130% pre-selloff rally, crowded institutional positioning, and NVDA customer-concentration risk for risk_overheat (IT)", "notes": "tertiary source — used only as supporting context alongside the 01 payload's own AI-capex-concentration risk (~93% of hyperscaler OCF), not standalone"},
+    {"source_name": "Tickeron — \"XLE Delivers +32% YTD Returns as Energy Sector Leads Amid 2026 Geopolitical Pressures\"", "source_type": "media", "url_or_reference": "https://tickeron.com/blogs/xle-delivers-32-ytd-returns-as-energy-sector-leads-amid-2026-geopolitical-pressures-15540/", "as_of_date": "2026-09-01", "retrieved_at": "2026-09-06", "reliability_tier": "tertiary", "used_for": "XLE +28.2%/+32% YTD vs SPY roughly flat; energy named top-performing S&P 500 sector of 2026, for relative_strength (Energy)", "notes": ""},
+    {"source_name": "GuruFocus / Seeking Alpha — XLE P/E and 2026 outlook", "source_type": "vendor", "url_or_reference": "https://www.gurufocus.com/news/8907695/energy-select-sector-spdr-xle-pivot-points-analysis", "as_of_date": "2026-09-01", "retrieved_at": "2026-09-06", "reliability_tier": "secondary", "used_for": "XLE P/E reported at 13.04 (GuruFocus) vs 17.61x (Seeking Alpha) for valuation_burden (Energy)", "notes": "conflicting figures — see source_conflicts"},
+    {"source_name": "ETF.com — weekly ETF flows / XLE flow data", "source_type": "vendor", "url_or_reference": "https://www.etf.com/sections/weekly-etf-flows/xle-gld-top-weekly-flows-dbefs-assets-plunge", "as_of_date": "2026-09-01", "retrieved_at": "2026-09-06", "reliability_tier": "secondary", "used_for": "XLE net flows: 1-month -$866.43M, 3-month -$2.29B, 6-month -$1.62B, 1-year +$1.75B, for flows_positioning (Energy)", "notes": ""},
+    {"source_name": "Tickeron — \"Energy Selloff Report 2026: The Biggest Outflow Since 2024\"", "source_type": "media", "url_or_reference": "https://tickeron.com/trading-investing-101/energy-selloff-report-2026-the-biggest-outflow-since-2024--what-retail-traders-must-understand-before-the-next-trade/", "as_of_date": "2026-09-01", "retrieved_at": "2026-09-06", "reliability_tier": "tertiary", "used_for": "April 2026 single-day XLE outflow of -$1.0B (largest in 14 years) on US-Iran ceasefire news, vs. a recent 4-week average inflow of +$1.0B near a 2-year high, for flows_positioning and risk_overheat (Energy)", "notes": ""},
+    {"source_name": "StoneX Group — \"Energy Stocks Price In Optimism That May Not Last Long\"", "source_type": "research", "url_or_reference": "https://www.stonex.com/en-us/insights/energy-stocks-price-in-optimism-that-may-not-last-long/", "as_of_date": "2026-05", "retrieved_at": "2026-09-06", "reliability_tier": "secondary", "used_for": "Energy sector rally built substantially on assumptions about sustained high oil prices; questions whether valuations hold if oil stabilizes/declines — used for risk_overheat (Energy)", "notes": ""}
+  ],
+  "source_conflicts": [
+    {
+      "field": "xle_pe_ratio",
+      "values": [
+        {"value": "13.04 (GuruFocus, early September 2026)", "source_idx": 8},
+        {"value": "17.61x (Seeking Alpha, 2026 outlook piece)", "source_idx": 8}
+      ],
+      "resolution": "Both readings sit at the low-to-moderate end of typical energy-sector through-cycle P/E ranges, so valuation_burden is not graded 'low' outright — per etf-grading-standards' cyclicals guidance (a cyclical sector's P/E can look cheapest right at an earnings-margin peak), the low P/E is treated as an ambiguous signal rather than confirmation of a discount, and graded B0 (ordinary) rather than A."
+    }
+  ],
+  "confidence": "medium",
+  "coverage": {
+    "available": ["macro_fit", "earnings_momentum", "relative_strength", "valuation_burden", "risk_overheat", "flows_positioning"],
+    "missing": [],
+    "impact_of_missing": "All six criteria were established for both sectors within the 3-4-search-per-sector budget; no criterion was left null. Confidence is capped at medium rather than high because: (1) two risk_overheat/flows_positioning citations for each sector rest on tertiary finance-content sites rather than primary/vendor data, (2) the XLE P/E figure conflicts across sources, and (3) some IT relative-strength and flows figures could not be pinned to an exact September 2026 as-of date and are treated as recent YTD approximations."
+  },
+  "payload": {
+    "scope_note": "run_config.sectors_scope is narrowed to exactly two sectors for this verification run (information technology, energy & power). The rubric's 'select top 3-5' rule degenerates with only two in scope; both are marked selected:true rather than dropping one, per the orchestrator's instruction.",
+    "sectors": [
+      {
+        "name": "information technology",
+        "criteria": {
+          "macro_fit": "A0",
+          "earnings_momentum": "A-",
+          "relative_strength": "A0",
+          "valuation_burden": "B-",
+          "risk_overheat": "C+",
+          "flows_positioning": "A-"
+        },
+        "grade": "B+",
+        "grade_numeric": 7.17,
+        "coverage_pct": 100.0,
+        "rationale": [
+          "01_market_regime.json names information technology directly in favorable_sector_types, citing record semiconductor sales (+104.1% YoY to $120.6B) and raised hyperscaler capex guidance (Alphabet $195-205B, TSMC $60-64B) — a direct, clearly-based macro_fit match (source_idx 0).",
+          "2026 US semiconductor earnings growth consensus is ~98% and hyperscaler capex guidance has been raised rather than cut, supporting a confirmed-upward earnings_momentum read (source_idx 0).",
+          "XLK has outperformed SPY YTD (+27.45% vs +8.10%) and over 10 years (25.40%/yr vs 15.53%/yr), a clear relative_strength edge, though the trend was mixed as recently as February 2026 (source_idx 1, 2).",
+          "XLK's P/E (33.02x) sits inside its own 5-year band [29.48, 36.41] rather than breaking above it, and roughly matches the broader S&P 500 IT sector P/E (32.88) — an ordinary rather than low or extreme valuation_burden (source_idx 3, 4).",
+          "Global tech-fund inflows hit a record +$131B YTD through mid-August 2026, more than doubling over the prior four months — a confirmed flows_positioning tailwind (source_idx 6)."
+        ],
+        "risks_to_check": [
+          "risk_overheat is the weakest criterion (C+): the semiconductor trade shows documented crowded institutional positioning and a prior sharp selloff after a +130% Philly Semi Index rally, and AI capex is now an estimated ~93% of hyperscaler operating cash flow per 01's key_risks — verify whether hyperscaler capex guidance holds through the next earnings cycle before treating IT strength as durable (source_idx 0, 7).",
+          "Verify the exact September 2026 XLK-vs-SPY performance gap directly (e.g., stockanalysis.com or Barchart) rather than relying on the YTD approximation used here, since the search did not return a September-dated snapshot (source_idx 2).",
+          "A confirmed or larger-than-expected Fed rate hike at the September 16, 2026 FOMC (01's key_risks: ~60-67% hike odds) would pressure IT's above-market valuation multiple disproportionately given its long-duration earnings profile."
+        ],
+        "selected": true
+      },
+      {
+        "name": "energy & power",
+        "criteria": {
+          "macro_fit": "A0",
+          "earnings_momentum": "A-",
+          "relative_strength": "A0",
+          "valuation_burden": "B0",
+          "risk_overheat": "C0",
+          "flows_positioning": "B0"
+        },
+        "grade": "B+",
+        "grade_numeric": 6.83,
+        "coverage_pct": 100.0,
+        "rationale": [
+          "01_market_regime.json names energy & power directly in favorable_sector_types, citing accelerating earnings consensus (+16.3% FY2026) and a structural AI-driven data-center power-demand tailwind (31GW to 66GW 2025-2027) alongside the oil-price surge — a direct, clearly-based macro_fit match (source_idx 0).",
+          "Energy-sector earnings growth consensus is accelerating sharply (71.0%/42.1%/40.9%/37.6% YoY across the next four quarters per 01), supporting a confirmed-upward earnings_momentum read, though natural-gas-weighted operators are flagged as a mixed pocket within the sector (source_idx 0).",
+          "XLE is up roughly +28-32% YTD in 2026 while SPY is close to flat, and energy is named the top-performing S&P 500 sector of 2026 — a clear relative_strength edge (source_idx 7).",
+          "XLE's P/E (reported as 13.04 or 17.61x depending on source) sits at the low-to-moderate end of typical energy multiples, but per the cyclicals guidance in etf-grading-standards a low P/E during a margin/earnings peak is an ambiguous rather than confirmatory 'cheap' signal, so valuation_burden is graded ordinary rather than low (source_idx 8).",
+          "Flows are genuinely mixed: XLE's 1-, 3-, and 6-month net flows are all negative (-$866M/-$2.29B/-$1.62B) even as the most recent 4-week average (+$1.0B) and 1-year figure (+$1.75B) are positive — graded neutral (source_idx 9)."
+        ],
+        "risks_to_check": [
+          "risk_overheat is the weakest criterion (C0): the rally is substantially built on a geopolitically-driven oil spike (US-Iran tensions), and the sector has already shown how fast that can reverse — a single ceasefire headline in April 2026 triggered a -$1.0B single-day XLE outflow, the largest in 14 years. Verify oil-price durability before treating current earnings momentum as structural rather than cyclical (source_idx 0, 8, 10).",
+          "Resolve the XLE P/E source conflict (13.04 vs 17.61x) against a primary/vendor filing-based figure before using it in any downstream ETF-level valuation call.",
+          "Any de-escalation of the Iran situation, an OPEC+ supply response, or a Fed rate hike (elevating the discount rate on capital-intensive energy infrastructure) are named directly in 01's key_risks as potential reversal triggers for this sector's earnings and price momentum alike."
+        ],
+        "selected": true
+      }
+    ],
+    "selected_sectors": ["information technology", "energy & power"]
+  }
+}

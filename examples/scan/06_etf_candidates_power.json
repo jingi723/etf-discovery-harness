@@ -1,0 +1,155 @@
+{
+  "artifact": "etf_candidates",
+  "as_of_date": "2026-09-06",
+  "generated_by": "etf-candidate-finder",
+  "sources": [
+    {
+      "source_name": "FMP (Financial Modeling Prep) — etf/info, quote, etf/holdings",
+      "source_type": "vendor",
+      "url_or_reference": "https://financialmodelingprep.com/stable/etf/info?symbol=XLE|XLU|XOP",
+      "as_of_date": "2026-09-05",
+      "retrieved_at": "2026-09-06",
+      "reliability_tier": "secondary",
+      "used_for": "AUM, expense ratio, inception date, holdings count, avg volume, and top-holdings weights for XLE, XLU, XOP",
+      "notes": "via tools/data.py etf_info() and fmp('etf/holdings', ...)"
+    },
+    {
+      "source_name": "State Street Global Advisors (SSGA) — Energy Select Sector SPDR Fund (XLE) product page",
+      "source_type": "issuer",
+      "url_or_reference": "https://www.ssga.com/us/en/institutional/etfs/state-street-energy-select-sector-spdr-etf-xle",
+      "as_of_date": "2026-09-06",
+      "retrieved_at": "2026-09-06",
+      "reliability_tier": "primary",
+      "used_for": "confirming replication method (sampling/physical, not synthetic), absence of leverage/inverse/options overlay, expense ratio, tracked index",
+      "notes": ""
+    },
+    {
+      "source_name": "State Street Global Advisors (SSGA) — Utilities Select Sector SPDR Fund (XLU) product page",
+      "source_type": "issuer",
+      "url_or_reference": "https://www.ssga.com/us/en/institutional/etfs/state-street-utilities-select-sector-spdr-etf-xlu",
+      "as_of_date": "2026-09-06",
+      "retrieved_at": "2026-09-06",
+      "reliability_tier": "primary",
+      "used_for": "confirming replication method (sampling/physical, not synthetic), absence of leverage/inverse/options overlay, expense ratio, tracked index",
+      "notes": ""
+    },
+    {
+      "source_name": "State Street Global Advisors (SSGA) — SPDR S&P Oil & Gas Exploration & Production ETF (XOP) product page",
+      "source_type": "issuer",
+      "url_or_reference": "https://www.ssga.com/us/en/institutional/etfs/state-street-spdr-sp-oil-gas-exploration-production-etf-xop",
+      "as_of_date": "2026-09-06",
+      "retrieved_at": "2026-09-06",
+      "reliability_tier": "primary",
+      "used_for": "confirming modified equal-weight construction, replication method (sampling/physical, not synthetic), absence of leverage/inverse/options overlay, expense ratio, tracked index",
+      "notes": ""
+    }
+  ],
+  "source_conflicts": [],
+  "confidence": "high",
+  "coverage": {
+    "available": [
+      "name, ticker, market, issuer, tracked index, replication style, holdings count, AUM, avg volume, expense ratio, inception date for all 3 candidates",
+      "top-holdings concentration for all 3 (used to classify type)",
+      "all 4 structural booleans (leverage_inverse, single_stock_leverage, synthetic_swap, option_strategy) confirmed false for all 3 from issuer product pages",
+      "holdings disclosure frequency (daily, per SPDR Select Sector Fund family standard)"
+    ],
+    "missing": [
+      "spread_pct, premium_discount_pct, tracking_error, tracking_difference for all 3 — not returned by FMP etf/info and not stated on the SSGA product overview pages fetched; would need a dedicated NAV-vs-price time series or issuer tracking-error factsheet",
+      "currency_hedged — not applicable, all 3 are domestic US-equity funds with no foreign-currency exposure to hedge",
+      "lp_quality — not verifiable from the sources used"
+    ],
+    "impact_of_missing": "Spread/premium-discount/tracking-error going to null does not block the structure gate (only the four structural booleans are hard-required and all are confirmed false here); it does lower the tradability data's completeness. Given AUM (USD 4.2B-42.5B) and avg daily volume (3.4M-32.4M shares) are all comfortably above the run's US thresholds (min AUM USD 100M, min trading value USD 5M/day), true spreads are very likely tight for all three, but that is inference, not a verified figure, so it is left null rather than estimated."
+  },
+  "payload": {
+    "theme": "energy & power (sector scan)",
+    "candidates": [
+      {
+        "name": "Energy Select Sector SPDR Fund",
+        "ticker": "XLE",
+        "market": "NYSE Arca",
+        "issuer": "State Street Global Advisors (SPDR)",
+        "index": "Energy Select Sector Index (S&P 500 energy constituents: oil, gas & consumable fuels; energy equipment & services)",
+        "style": "passive",
+        "holdings_count": 21,
+        "aum": "USD 42.5B",
+        "avg_volume": "32.4M shares/day",
+        "expense_ratio": "0.08%",
+        "type": "broad index",
+        "notes": "The standard broad benchmark for the GICS Energy (oil & gas) sector; role in this comparison is the sector's broad index. Note it is also fairly concentrated — Exxon Mobil (19.9%) + Chevron (15.2%) = ~35.1% of the fund across only 21 holdings, so 'broad' does not mean flat-weighted; flagged as a mega-cap tilt worth naming alongside the 'broad index' label.",
+        "structure_trading": {
+          "listing_date": "1998-12-16",
+          "leverage_inverse": false,
+          "single_stock_leverage": false,
+          "synthetic_swap": false,
+          "option_strategy": false,
+          "currency_hedged": null,
+          "spread_pct": null,
+          "premium_discount_pct": null,
+          "tracking_error": null,
+          "tracking_difference": null,
+          "real_cost_notes": "Physical/sampled replication (not swap-based), 0.08% expense ratio is among the lowest in the sector-ETF category; USD 42.5B AUM and ~32.4M shares/day average volume imply very high liquidity and (inferred, not measured) tight spreads.",
+          "lp_quality": null,
+          "holdings_transparency": "daily"
+        }
+      },
+      {
+        "name": "Utilities Select Sector SPDR Fund",
+        "ticker": "XLU",
+        "market": "NYSE Arca",
+        "issuer": "State Street Global Advisors (SPDR)",
+        "index": "Utilities Select Sector Index (S&P 500 utilities constituents: electric, multi, gas utilities, independent power & renewable producers)",
+        "style": "passive",
+        "holdings_count": 31,
+        "aum": "USD 22.4B",
+        "avg_volume": "20.4M shares/day",
+        "expense_ratio": "0.08%",
+        "type": "mega-cap led",
+        "notes": "Represents the electric-power side of the sector (this sector spans both oil & gas and electric power) — top holdings include NextEra Energy (13.1%), Southern Co (7.5%), Duke Energy (7.1%), Constellation Energy (6.8%), American Electric Power (5.1%). Moderately concentrated in a handful of large regulated/independent power utilities rather than flat across all 31 names, distinct in construction from XLE's oil & gas mega-caps and from XOP's equal-weight sub-industry approach.",
+        "structure_trading": {
+          "listing_date": "1998-12-16",
+          "leverage_inverse": false,
+          "single_stock_leverage": false,
+          "synthetic_swap": false,
+          "option_strategy": false,
+          "currency_hedged": null,
+          "spread_pct": null,
+          "premium_discount_pct": null,
+          "tracking_error": null,
+          "tracking_difference": null,
+          "real_cost_notes": "Physical/sampled replication, 0.08% expense ratio; USD 22.4B AUM and ~20.4M shares/day average volume imply very high liquidity and (inferred, not measured) tight spreads.",
+          "lp_quality": null,
+          "holdings_transparency": "daily"
+        }
+      },
+      {
+        "name": "SPDR S&P Oil & Gas Exploration & Production ETF",
+        "ticker": "XOP",
+        "market": "NYSE Arca",
+        "issuer": "State Street Global Advisors (SPDR)",
+        "index": "S&P Oil & Gas Exploration & Production Select Industry Index (modified equal-weight)",
+        "style": "passive",
+        "holdings_count": 51,
+        "aum": "USD 4.16B",
+        "avg_volume": "3.37M shares/day",
+        "expense_ratio": "0.35%",
+        "type": "highly diversified",
+        "notes": "The structurally different candidate: a modified equal-weighted sub-industry play (Integrated Oil & Gas, Oil & Gas E&P, Oil & Gas Refining & Marketing) rather than a cap-weighted broad sector fund. Top holding is only 3.9% (PBF Energy) across 51 names, deliberately spreading exposure across large/mid/small-cap E&P and refining names instead of concentrating in supermajors — the opposite construction from XLE. Higher expense ratio (0.35% vs 0.08%) and smaller AUM/volume than XLE/XLU, though still above the run's US structure-gate thresholds.",
+        "structure_trading": {
+          "listing_date": "2006-06-19",
+          "leverage_inverse": false,
+          "single_stock_leverage": false,
+          "synthetic_swap": false,
+          "option_strategy": false,
+          "currency_hedged": null,
+          "spread_pct": null,
+          "premium_discount_pct": null,
+          "tracking_error": null,
+          "tracking_difference": null,
+          "real_cost_notes": "Physical/sampled replication of a modified equal-weight index; higher expense ratio (0.35%) and more frequent rebalancing turnover to maintain equal weighting than a cap-weighted sector fund, which is a real cost beyond the headline ratio. USD 4.16B AUM and ~3.37M shares/day average volume are smaller than XLE/XLU but still well above the run's US thresholds (min AUM USD 100M, min trading value USD 5M/day).",
+          "lp_quality": null,
+          "holdings_transparency": "daily"
+        }
+      }
+    ]
+  }
+}

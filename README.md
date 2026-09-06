@@ -69,8 +69,10 @@ claude
 > Find ETF candidates worth reviewing in the current market
 ```
 
-Not ready to install? [`examples/`](examples/) holds a complete run — the four reports,
-the coverage log, and an interactive ETF detail page you can open in a browser.
+Not ready to install? [`examples/`](examples/) holds one real run per depth — a
+[scan](examples/scan/scan_result.md) (two agents, ranked funds with per-indicator
+scores) and a [full run](examples/full/) (the five reports plus an interactive ETF
+detail page).
 
 ## The tools
 
@@ -194,7 +196,9 @@ for a log that survives across processes. A plain `score.py` run costs 3 calls; 
 │       ├── etf-compliance-rules/       # banned phrasing, four-state verdicts
 │       ├── etf-report-templates/       # report contracts
 │       └── etf-ui-render/              # WebView / PDF / PNG / DOCX rendering
-├── examples/                           # a complete run, kept as a snapshot
+├── examples/                           # one real run per depth
+│   ├── scan/                           # the default path, English
+│   └── full/                           # the ~60-agent pipeline
 ├── docs/
 │   ├── API_SETUP.md                    # FMP and Toss setup, coverage matrix
 │   ├── RUN_COST.md                     # measured tokens and API calls per run
@@ -208,7 +212,7 @@ Korean working branch this was built and used in for two months, and it stays th
 day-to-day version; `main` is its published translation. Output follows the language you
 ask in, so an English request produces an English report on either branch.
 
-The sample run in `examples/` predates the translation and is in Korean.
+The scan example is English; the full-pipeline example predates the translation and is in Korean.
 
 ## Two ways in, and two depths
 

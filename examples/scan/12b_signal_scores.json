@@ -1,0 +1,482 @@
+{
+  "XLE": {
+    "macro": 62,
+    "long": 59.2,
+    "close": 64.06,
+    "date": "2026-09-04",
+    "chg": -0.87,
+    "d20": 11.41,
+    "rs": 11.81,
+    "pos60": 88.7,
+    "fh": -2.23,
+    "vol": 0.81,
+    "ma20": 62.87,
+    "ma60": 58.51,
+    "ma200": 54.83,
+    "swing": 65.0,
+    "parts": {
+      "macro": 62,
+      "value": 50,
+      "trend": 100,
+      "momentum": 75,
+      "position": 0,
+      "rs": 100,
+      "flow": 25
+    },
+    "weights": {
+      "macro": 10,
+      "value": 5,
+      "trend": 25,
+      "momentum": 20,
+      "position": 20,
+      "rs": 15,
+      "flow": 5
+    },
+    "short": 64.3,
+    "breadth": "6/6",
+    "holdings": [
+      {
+        "sym": "XOM",
+        "w": 19.9,
+        "score": 62.5,
+        "d20": 4.2,
+        "pos": 73
+      },
+      {
+        "sym": "CVX",
+        "w": 15.18,
+        "score": 67.5,
+        "d20": 11.8,
+        "pos": 90
+      },
+      {
+        "sym": "COP",
+        "w": 6.34,
+        "score": 67.5,
+        "d20": 14.2,
+        "pos": 91
+      },
+      {
+        "sym": "MPC",
+        "w": 5.6,
+        "score": 72.5,
+        "d20": 30.4,
+        "pos": 94
+      },
+      {
+        "sym": "PSX",
+        "w": 5.47,
+        "score": 66.2,
+        "d20": 25.1,
+        "pos": 94
+      },
+      {
+        "sym": "VLO",
+        "w": 5.21,
+        "score": 66.2,
+        "d20": 24.3,
+        "pos": 97
+      }
+    ]
+  },
+  "XOP": {
+    "macro": 62,
+    "long": 59.2,
+    "close": 190.71,
+    "date": "2026-09-04",
+    "chg": -0.84,
+    "d20": 14.61,
+    "rs": 15.01,
+    "pos60": 90.7,
+    "fh": -2.11,
+    "vol": 0.76,
+    "ma20": 185.36,
+    "ma60": 170.83,
+    "ma200": 158.44,
+    "swing": 65.0,
+    "parts": {
+      "macro": 62,
+      "value": 50,
+      "trend": 100,
+      "momentum": 75,
+      "position": 0,
+      "rs": 100,
+      "flow": 25
+    },
+    "weights": {
+      "macro": 10,
+      "value": 5,
+      "trend": 25,
+      "momentum": 20,
+      "position": 20,
+      "rs": 15,
+      "flow": 5
+    },
+    "short": 64.3,
+    "breadth": "6/6",
+    "holdings": [
+      {
+        "sym": "PBF",
+        "w": 3.86,
+        "score": 66.2,
+        "d20": 20.5,
+        "pos": 91
+      },
+      {
+        "sym": "DINO",
+        "w": 3.27,
+        "score": 66.2,
+        "d20": 29.5,
+        "pos": 94
+      },
+      {
+        "sym": "MPC",
+        "w": 3.21,
+        "score": 72.5,
+        "d20": 30.4,
+        "pos": 94
+      },
+      {
+        "sym": "DK",
+        "w": 3.21,
+        "score": 78.7,
+        "d20": 22.9,
+        "pos": 85
+      },
+      {
+        "sym": "VLO",
+        "w": 3.14,
+        "score": 66.2,
+        "d20": 24.3,
+        "pos": 97
+      },
+      {
+        "sym": "PARR",
+        "w": 3.1,
+        "score": 66.2,
+        "d20": 22.7,
+        "pos": 85
+      }
+    ]
+  },
+  "XLK": {
+    "macro": 15,
+    "long": 32.2,
+    "close": 187.28,
+    "date": "2026-09-04",
+    "chg": 0.7,
+    "d20": -0.37,
+    "rs": 0.03,
+    "pos60": 74.8,
+    "fh": -3.61,
+    "vol": 0.57,
+    "ma20": 185.7,
+    "ma60": 183.3,
+    "ma200": 160.36,
+    "swing": 49.5,
+    "parts": {
+      "macro": 15,
+      "value": null,
+      "trend": 100,
+      "momentum": 40,
+      "position": 25,
+      "rs": 50,
+      "flow": 0
+    },
+    "weights": {
+      "macro": 10,
+      "value": 5,
+      "trend": 25,
+      "momentum": 20,
+      "position": 20,
+      "rs": 15,
+      "flow": 5
+    },
+    "short": 48.2,
+    "breadth": "3/6",
+    "holdings": [
+      {
+        "sym": "NVDA",
+        "w": 14.91,
+        "score": 59.0,
+        "d20": 2.9,
+        "pos": 90
+      },
+      {
+        "sym": "AAPL",
+        "w": 12.99,
+        "score": 62.8,
+        "d20": 2.1,
+        "pos": 65
+      },
+      {
+        "sym": "MSFT",
+        "w": 10.21,
+        "score": 45.8,
+        "d20": -0.1,
+        "pos": 89
+      },
+      {
+        "sym": "AVGO",
+        "w": 4.56,
+        "score": 40.8,
+        "d20": -16.3,
+        "pos": 17
+      },
+      {
+        "sym": "MU",
+        "w": 4.01,
+        "score": 51.5,
+        "d20": 15.8,
+        "pos": 54
+      },
+      {
+        "sym": "AMD",
+        "w": 3.82,
+        "score": 38.2,
+        "d20": -1.2,
+        "pos": 33
+      }
+    ]
+  },
+  "RSPT": {
+    "macro": 15,
+    "long": 27.8,
+    "close": 64.16,
+    "date": "2026-09-04",
+    "chg": -0.16,
+    "d20": -0.76,
+    "rs": -0.36,
+    "pos60": 69.5,
+    "fh": -4.08,
+    "vol": 0.55,
+    "ma20": 64.54,
+    "ma60": 62.78,
+    "ma200": 53.56,
+    "swing": 42.9,
+    "parts": {
+      "macro": 15,
+      "value": null,
+      "trend": 75,
+      "momentum": 40,
+      "position": 25,
+      "rs": 50,
+      "flow": 0
+    },
+    "weights": {
+      "macro": 10,
+      "value": 5,
+      "trend": 25,
+      "momentum": 20,
+      "position": 20,
+      "rs": 15,
+      "flow": 5
+    },
+    "short": 42.0,
+    "breadth": "6/6",
+    "holdings": [
+      {
+        "sym": "ZBRA",
+        "w": 2.18,
+        "score": 37.0,
+        "d20": -3.7,
+        "pos": 87
+      },
+      {
+        "sym": "CRM",
+        "w": 1.97,
+        "score": 69.0,
+        "d20": 34.5,
+        "pos": 93
+      },
+      {
+        "sym": "WDAY",
+        "w": 1.85,
+        "score": 72.8,
+        "d20": 9.0,
+        "pos": 73
+      },
+      {
+        "sym": "DELL",
+        "w": 1.84,
+        "score": 69.0,
+        "d20": 15.5,
+        "pos": 94
+      },
+      {
+        "sym": "SMCI",
+        "w": 1.76,
+        "score": 61.5,
+        "d20": 27.2,
+        "pos": 86
+      },
+      {
+        "sym": "PLTR",
+        "w": 1.74,
+        "score": 49.0,
+        "d20": 1.3,
+        "pos": 83
+      }
+    ]
+  },
+  "SMH": {
+    "macro": 12,
+    "long": 16.1,
+    "close": 567.01,
+    "date": "2026-09-04",
+    "chg": 2.61,
+    "d20": -2.69,
+    "rs": -2.3,
+    "pos60": 37.7,
+    "fh": -15.6,
+    "vol": 0.56,
+    "ma20": 565.42,
+    "ma60": 583.69,
+    "ma200": 477.4,
+    "swing": 36.0,
+    "parts": {
+      "macro": 12,
+      "value": null,
+      "trend": 25,
+      "momentum": 40,
+      "position": 75,
+      "rs": 25,
+      "flow": 0
+    },
+    "weights": {
+      "macro": 10,
+      "value": 5,
+      "trend": 25,
+      "momentum": 20,
+      "position": 20,
+      "rs": 15,
+      "flow": 5
+    },
+    "short": 35.6,
+    "breadth": "1/6",
+    "holdings": [
+      {
+        "sym": "NVDA",
+        "w": 23.78,
+        "score": 58.7,
+        "d20": 2.9,
+        "pos": 90
+      },
+      {
+        "sym": "TSM",
+        "w": 9.65,
+        "score": 47.5,
+        "d20": 2.1,
+        "pos": 53
+      },
+      {
+        "sym": "AVGO",
+        "w": 5.92,
+        "score": 40.5,
+        "d20": -16.3,
+        "pos": 17
+      },
+      {
+        "sym": "MU",
+        "w": 5.6,
+        "score": 51.2,
+        "d20": 15.8,
+        "pos": 54
+      },
+      {
+        "sym": "AMD",
+        "w": 5.26,
+        "score": 38.0,
+        "d20": -1.2,
+        "pos": 33
+      },
+      {
+        "sym": "ASML",
+        "w": 4.95,
+        "score": 40.5,
+        "d20": -1.5,
+        "pos": 39
+      }
+    ]
+  },
+  "XLU": {
+    "macro": 30,
+    "long": 33.2,
+    "close": 43.08,
+    "date": "2026-09-04",
+    "chg": 0.12,
+    "d20": -1.22,
+    "rs": -0.82,
+    "pos60": 25.6,
+    "fh": -7.61,
+    "vol": 1.0,
+    "ma20": 43.36,
+    "ma60": 44.51,
+    "ma200": 44.66,
+    "swing": 36.1,
+    "parts": {
+      "macro": 30,
+      "value": null,
+      "trend": 25,
+      "momentum": 0,
+      "position": 75,
+      "rs": 50,
+      "flow": 50
+    },
+    "weights": {
+      "macro": 10,
+      "value": 5,
+      "trend": 25,
+      "momentum": 20,
+      "position": 20,
+      "rs": 15,
+      "flow": 5
+    },
+    "short": 35.2,
+    "breadth": "1/6",
+    "holdings": [
+      {
+        "sym": "NEE",
+        "w": 13.12,
+        "score": 46.0,
+        "d20": -1.4,
+        "pos": 26
+      },
+      {
+        "sym": "SO",
+        "w": 7.49,
+        "score": 47.2,
+        "d20": -4.9,
+        "pos": 8
+      },
+      {
+        "sym": "DUK",
+        "w": 7.08,
+        "score": 39.2,
+        "d20": -3.7,
+        "pos": 9
+      },
+      {
+        "sym": "CEG",
+        "w": 6.82,
+        "score": 63.0,
+        "d20": 10.8,
+        "pos": 99
+      },
+      {
+        "sym": "AEP",
+        "w": 5.08,
+        "score": 48.5,
+        "d20": -1.0,
+        "pos": 22
+      },
+      {
+        "sym": "D",
+        "w": 4.35,
+        "score": 49.8,
+        "d20": -2.3,
+        "pos": 14
+      }
+    ]
+  }
+}

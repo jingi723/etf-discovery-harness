@@ -1,0 +1,137 @@
+{
+  "artifact": "structure_trading_gate",
+  "as_of_date": "2026-09-06",
+  "generated_by": "orchestrator (scan path, Phase S \u2014 script step, no agent)",
+  "sources": [
+    {
+      "source_name": "FMP (Financial Modeling Prep) \u2014 quote/etf/info",
+      "source_type": "vendor",
+      "url_or_reference": "https://financialmodelingprep.com/stable/etf/info?symbol=XLK|SMH|RSPT (via tools/data.py)",
+      "as_of_date": "2026-09-05",
+      "retrieved_at": "2026-09-06",
+      "reliability_tier": "secondary",
+      "used_for": "existence confirmation (quote), AUM, expense ratio, inception date, holdings count, and replication-technique description for XLK, SMH, RSPT",
+      "notes": "FMP's own description text states XLK and RSPT each track their index 'by using full replication technique' \u2014 used as the structural evidence that these are physically replicated, non-synthetic funds"
+    },
+    {
+      "source_name": "ETF Research Center (etfrc.com) \u2014 Fund Focus pages",
+      "source_type": "vendor",
+      "url_or_reference": "https://www.etfrc.com/XLK ; https://www.etfrc.com/SMH ; https://www.etfrc.com/RSPT",
+      "as_of_date": "2026-09-06",
+      "retrieved_at": "2026-09-06",
+      "reliability_tier": "secondary",
+      "used_for": "average bid/ask spread and total-cost-of-ownership figures for all three candidates",
+      "notes": "premium/discount and tracking-error tabs on this site are gated behind a paid subscription and were not accessible \u2014 recorded as missing"
+    },
+    {
+      "source_name": "VanEck / web search summary of SMH prospectus language",
+      "source_type": "issuer",
+      "url_or_reference": "https://www.vaneck.com/us/en/investments/semiconductor-etf-smh/ (fetch blocked by redirect loop; confirmed via search snippet of the same page and fact sheet)",
+      "as_of_date": "2026-09-06",
+      "retrieved_at": "2026-09-06",
+      "reliability_tier": "secondary",
+      "used_for": "confirms SMH invests at least 80% of assets directly in index-constituent securities (physical replication, not swap-based), no leverage/options structure, holdings published daily",
+      "notes": "direct WebFetch to the VanEck page failed with a redirect loop; relied on the search engine's extracted snippet of the same official page and the linked fact sheet filename instead of a direct primary fetch \u2014 confidence lowered accordingly"
+    },
+    {
+      "source_name": "FMP (Financial Modeling Prep) \u2014 etf/info, quote, etf/holdings",
+      "source_type": "vendor",
+      "url_or_reference": "https://financialmodelingprep.com/stable/etf/info?symbol=XLE|XLU|XOP",
+      "as_of_date": "2026-09-05",
+      "retrieved_at": "2026-09-06",
+      "reliability_tier": "secondary",
+      "used_for": "AUM, expense ratio, inception date, holdings count, avg volume, and top-holdings weights for XLE, XLU, XOP",
+      "notes": "via tools/data.py etf_info() and fmp('etf/holdings', ...)"
+    },
+    {
+      "source_name": "State Street Global Advisors (SSGA) \u2014 Energy Select Sector SPDR Fund (XLE) product page",
+      "source_type": "issuer",
+      "url_or_reference": "https://www.ssga.com/us/en/institutional/etfs/state-street-energy-select-sector-spdr-etf-xle",
+      "as_of_date": "2026-09-06",
+      "retrieved_at": "2026-09-06",
+      "reliability_tier": "primary",
+      "used_for": "confirming replication method (sampling/physical, not synthetic), absence of leverage/inverse/options overlay, expense ratio, tracked index",
+      "notes": ""
+    },
+    {
+      "source_name": "State Street Global Advisors (SSGA) \u2014 Utilities Select Sector SPDR Fund (XLU) product page",
+      "source_type": "issuer",
+      "url_or_reference": "https://www.ssga.com/us/en/institutional/etfs/state-street-utilities-select-sector-spdr-etf-xlu",
+      "as_of_date": "2026-09-06",
+      "retrieved_at": "2026-09-06",
+      "reliability_tier": "primary",
+      "used_for": "confirming replication method (sampling/physical, not synthetic), absence of leverage/inverse/options overlay, expense ratio, tracked index",
+      "notes": ""
+    },
+    {
+      "source_name": "State Street Global Advisors (SSGA) \u2014 SPDR S&P Oil & Gas Exploration & Production ETF (XOP) product page",
+      "source_type": "issuer",
+      "url_or_reference": "https://www.ssga.com/us/en/institutional/etfs/state-street-spdr-sp-oil-gas-exploration-production-etf-xop",
+      "as_of_date": "2026-09-06",
+      "retrieved_at": "2026-09-06",
+      "reliability_tier": "primary",
+      "used_for": "confirming modified equal-weight construction, replication method (sampling/physical, not synthetic), absence of leverage/inverse/options overlay, expense ratio, tracked index",
+      "notes": ""
+    }
+  ],
+  "source_conflicts": [],
+  "confidence": "medium",
+  "coverage": {
+    "available": [
+      "structural booleans for all 6 candidates"
+    ],
+    "missing": [
+      "spread_pct",
+      "tracking_error",
+      "premium_discount_pct",
+      "lp_quality"
+    ],
+    "impact_of_missing": "Tracking quality cannot be verified from FMP, so no candidate can reach 'pass'; all six are capped at 'conditional'."
+  },
+  "payload": {
+    "gates": {
+      "XLK": {
+        "status": "conditional",
+        "reasons": [
+          "tradability metrics unobtained: tracking_error, premium_discount_pct"
+        ],
+        "impact_on_decision_gate": "Caps the verdict at 'conditional' \u2014 the structure is sound but tracking quality could not be verified."
+      },
+      "SMH": {
+        "status": "conditional",
+        "reasons": [
+          "tradability metrics unobtained: tracking_error, premium_discount_pct"
+        ],
+        "impact_on_decision_gate": "Caps the verdict at 'conditional' \u2014 the structure is sound but tracking quality could not be verified."
+      },
+      "RSPT": {
+        "status": "conditional",
+        "reasons": [
+          "tradability metrics unobtained: tracking_error, premium_discount_pct"
+        ],
+        "impact_on_decision_gate": "Caps the verdict at 'conditional' \u2014 the structure is sound but tracking quality could not be verified."
+      },
+      "XLE": {
+        "status": "conditional",
+        "reasons": [
+          "tradability metrics unobtained: spread_pct, tracking_error, premium_discount_pct"
+        ],
+        "impact_on_decision_gate": "Caps the verdict at 'conditional' \u2014 the structure is sound but tracking quality could not be verified."
+      },
+      "XLU": {
+        "status": "conditional",
+        "reasons": [
+          "tradability metrics unobtained: spread_pct, tracking_error, premium_discount_pct"
+        ],
+        "impact_on_decision_gate": "Caps the verdict at 'conditional' \u2014 the structure is sound but tracking quality could not be verified."
+      },
+      "XOP": {
+        "status": "conditional",
+        "reasons": [
+          "tradability metrics unobtained: spread_pct, tracking_error, premium_discount_pct"
+        ],
+        "impact_on_decision_gate": "Caps the verdict at 'conditional' \u2014 the structure is sound but tracking quality could not be verified."
+      }
+    }
+  }
+}
