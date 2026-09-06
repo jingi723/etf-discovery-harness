@@ -6,6 +6,10 @@
 
 Exit code 0 when clean, 1 when anything is found.
 
+Point it at run output (_workspace/13_reports/, output/{run_date}/), not at the
+repository's own prose: the skill file that documents the banned list naturally
+matches every entry in it.
+
 Matching is literal substring, so both language lists are checked on every
 file — an English run and a Korean run are caught by the same pass.
 """
