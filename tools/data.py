@@ -14,6 +14,7 @@ import gzip
 import json
 import os
 import time
+import re
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -23,6 +24,35 @@ from pathlib import Path
 # also append one JSON line per call.
 CALLS: dict[str, int] = {}
 _LOG = os.environ.get("ETF_API_LOG")
+
+
+# In-process response cache. score.score() refetches the same price series for
+# every horizon, so scoring six funds across three horizons cost 150+ requests
+# against a 250/day free tier. Cached, the same work is 58.
+#
+# Time-bounded on purpose: serving a stale close as today's is worse than
+# spending the request. ETF_CACHE_TTL seconds, 0 disables entirely.
+_CACHE: dict[str, tuple[float, object]] = {}
+_HITS = 0
+try:
+    _TTL = float(os.environ.get("ETF_CACHE_TTL", 300))
+except ValueError:
+    _TTL = 300.0
+
+
+def _cache_key(url):
+    """Drop the API key so it is never a dict key we might print."""
+    return re.sub(r"[?&]apikey=[^&]*", "", url)
+
+
+def clear_cache():
+    """Forget everything cached. Call this when crossing a session boundary,
+    after a market close, or any time freshness matters more than the request."""
+    _CACHE.clear()
+
+
+def cache_stats():
+    return {"entries": len(_CACHE), "hits": _HITS, "ttl_seconds": _TTL}
 
 
 def _count(provider, endpoint):
@@ -35,8 +65,16 @@ def _count(provider, endpoint):
 
 
 def call_summary():
-    """{'fmp:quote': 3, ...} plus the total — for a run's cost record."""
-    return {"by_endpoint": dict(CALLS), "total": sum(CALLS.values())}
+    """{'fmp:quote': 3, ...} plus totals.
+
+    `total` is how many calls your code made. `served_from_cache` is how many of
+    those never left the process, so network requests — the ones that count
+    against a rate limit — are `total - served_from_cache`.
+    """
+    total = sum(CALLS.values())
+    return {"by_endpoint": dict(CALLS), "total": total,
+            "served_from_cache": _HITS, "network_requests": total - _HITS,
+            "cache_ttl_seconds": _TTL}
 
 
 FMP = "https://financialmodelingprep.com/stable"
@@ -56,6 +94,13 @@ def load_env(path=".env"):
 
 
 def _get(url, data=None, headers=None, retries=3):
+    global _HITS
+    key = _cache_key(url) if data is None else None   # never cache POSTs
+    if key and _TTL > 0:
+        hit = _CACHE.get(key)
+        if hit and time.time() - hit[0] < _TTL:
+            _HITS += 1
+            return hit[1]
     for attempt in range(retries):
         try:
             req = urllib.request.Request(url, data=data, headers=headers or {})
@@ -64,7 +109,10 @@ def _get(url, data=None, headers=None, retries=3):
             # some endpoints return gzip regardless of Accept-Encoding
             if raw[:2] == b"\x1f\x8b":
                 raw = gzip.decompress(raw)
-            return json.loads(raw)
+            out = json.loads(raw)
+            if key and _TTL > 0:
+                _CACHE[key] = (time.time(), out)
+            return out
         except urllib.error.HTTPError as e:
             if e.code == 429 and attempt < retries - 1:
                 time.sleep(2 ** attempt * 2)
@@ -170,3 +218,31 @@ def investor_trading(symbol, count=10):
 def short_selling(symbol, count=10):
     """Korean short-selling volume and its share of total volume."""
     return toss(f"stocks/{symbol}/short-selling", count=count)["records"]
+
+
+def demo():
+    """Self-check: the cache must cut repeats, expire, and keep keys out."""
+    global _TTL, _HITS
+    _TTL, saved = 60.0, _TTL
+    clear_cache(); _HITS = 0
+    _CACHE["https://x/stable/quote?symbol=SPY"] = (time.time(), {"ok": 1})
+    assert _get("https://x/stable/quote?symbol=SPY&apikey=SECRET") == {"ok": 1}, "key must be stripped"
+    assert _HITS == 1
+    assert not any("SECRET" in k for k in _CACHE), "api key leaked into a cache key"
+    _CACHE["https://x/stale"] = (time.time() - 1e6, {"old": 1})
+    assert "https://x/stale" in _CACHE
+    _TTL = 0.0                      # disabled means never serve from cache
+    hits_before = _HITS
+    try:
+        _get("https://x/stable/quote?symbol=SPY&apikey=SECRET")
+    except Exception:
+        pass                        # it will try the network and fail; that is the point
+    assert _HITS == hits_before, "TTL=0 must bypass the cache"
+    _TTL = saved
+    clear_cache()
+    print("ok")
+
+
+if __name__ == "__main__":
+    if "--self-check" in __import__("sys").argv:
+        demo()

@@ -21,7 +21,7 @@ Phases 0–3 are shared. **After sector selection the run forks**, and the fork 
 |---|---|---|
 | After Phase 3 | Phase S: representative ETFs per sector → Phase 11.5 scoring → judgment blocks | Phases 4–14: themes, evidence, candidates, value chains, three axes, gate, reports |
 | Agents | 3 | ~60 |
-| Cost | ~300k tokens + ~15 API calls per fund | 6–7M tokens |
+| Cost | ~170k tokens reusing a same-day regime, ~360k from cold; ~10 network requests per fund | 6–7M tokens |
 | Output | one judgment block per fund, ranked | five reports, analysis.json, UI, PDF |
 | Misses | theme purity — a fund that is 55% outside its own theme looks fine here | nothing, at that price |
 

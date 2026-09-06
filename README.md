@@ -216,7 +216,7 @@ Which path runs is decided by one question: **does the request name a fund?**
 
 ```text
 "how does SOXX look"          →  score it            3 API calls, 1 turn
-"what's worth a look"         →  scan               ~3 agents
+"what's worth a look"         →  scan               2-4 agents
 "...and I need the evidence"  →  full pipeline      ~60 agents
 ```
 

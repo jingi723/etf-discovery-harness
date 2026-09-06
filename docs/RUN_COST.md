@@ -11,6 +11,7 @@ Everything below is measured from this repository's own runs, not estimated. Whe
 | Command | FMP calls |
 |---|---:|
 | `score.py TICKER --horizon X` | **3** (2 price series, 1 ratios) |
+| the same ticker across all 3 horizons | **3**, not 9 — responses are cached in-process |
 | `score.py TICKER --holdings` | **15** (the above + holdings + 10 constituent price series) |
 | `validate.py TICKER --pattern X` | **1** |
 | `render.py` | **0** (reads a local payload) |
@@ -27,6 +28,10 @@ print(data.call_summary())   # {'by_endpoint': {'fmp:quote': 2, ...}, 'total': 5
 ```
 
 Set `ETF_API_LOG=/path/to/log.jsonl` to also append one JSON line per call, which survives across processes.
+
+**Responses are cached in-process for 5 minutes** (`ETF_CACHE_TTL` seconds, 0 disables). It is time-bounded on purpose — serving yesterday's close as today's is worse than spending the request — and `data.clear_cache()` forces a refresh at a session boundary or after a market close. `call_summary()` separates `total` (calls your code made) from `network_requests` (the ones that count against a rate limit).
+
+Without it, scoring six funds across three horizons issued over 150 requests, most of them refetches of the same price series. Cached, the same scan costs 58.
 
 ## The pipeline: model tokens
 
