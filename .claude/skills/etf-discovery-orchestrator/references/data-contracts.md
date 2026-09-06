@@ -79,7 +79,7 @@ _workspace/
 ├── 15_ui/                            # UI 변환 레이어
 │   ├── ui_payload.json               # 화면용 경량 JSON (계약: etf-ui-render 스킬)
 │   ├── ui_payload_audit.md
-│   └── html/                         # discovery_index·etf_{ticker}·compare·render_notes.md
+│   └── html/                         # discovery_index·etf_{ticker}·compare·report.html
 └── 16_ui_render_qa.json / .md
 ```
 

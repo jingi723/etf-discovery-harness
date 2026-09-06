@@ -54,10 +54,10 @@ ETF 투자 고수의 프로세스 — "시장 환경 판단 → 유리한 섹터
 | 14 | Report Generator | `.claude/agents/report-generator.md` |
 | 15 | QA & Compliance Guard | `.claude/agents/qa-compliance-guard.md` |
 | 16 | UI Payload Builder | `.claude/agents/ui-payload-builder.md` |
-| 17 | HTML Mock Renderer | `.claude/agents/html-mock-renderer.md` |
-| 18 | UI Render QA | `.claude/agents/ui-render-qa.md` |
 
-공유 스킬 4종: `etf-grading-standards`(등급 표준 + weighted_grade.py), `etf-evidence-standards`(근거 수집 표준), `etf-compliance-rules`(금지 표현 + check_forbidden.py + 4단계 분류 규칙), `etf-report-templates`(산출물 5종 템플릿).
+렌더링은 에이전트가 아니라 스크립트(`tools/render.py`)가 한다 — 아래 v1.4 항목 참조.
+
+공유 스킬 5종: `etf-grading-standards`(등급 표준 + weighted_grade.py), `etf-evidence-standards`(근거 수집 표준), `etf-compliance-rules`(금지 표현 + check_forbidden.py + 4단계 분류 규칙), `etf-report-templates`(산출물 5종 템플릿), `etf-signal-scoring`(7지표×3시간축 단일 티커 채점 + tools/score.py·validate.py).
 
 ## 5. 각 에이전트 역할
 
@@ -200,19 +200,21 @@ output/{run_date}/              # QA 통과본
 
 **산출물 범위 (run_config.output_scope)**: 1차 실행은 `pilot` — 필수 4종(data_coverage, sector_theme_discovery, final_etf_decision, analysis.json)만 생성하고 etf_candidates.md 내용은 final_etf_decision.md의 후보 비교 섹션에 압축 포함한다. 2차 실행부터 `full` — etf_candidates.md를 별도 산출물로 분리.
 
-### UI·일회성 보고서 전달 레이어 (v1.3)
+### UI·일회성 보고서 전달 레이어 (v1.4)
 
 리서치 QA **이후** Phase 13.5에서 상류 결과를 탐색 UI와 공유 가능한 일회성 보고서로 변환한다. **이 레이어는 리서치 판단을 새로 만들지 않는다** — 등급·판단 상태·수치·설명은 QA 통과 값을 그대로 표현한다.
 
-analysis.json을 직접 렌더러에 넣지 않고 `ui_payload.json`으로 경량화한 뒤 목업(`etf-ui-render/assets/mock.html`)에 바인딩한다:
+analysis.json은 감사 추적용이라 수백 KB다. 렌더러가 직접 읽으면 컨텍스트 낭비이자 원본 재해석(=왜곡) 위험이 생기므로 `ui_payload.json`으로 한 번 경량화한다:
 
 ```
-analysis.json → ui_payload.json → 탐색 HTML + report.html → UI QA → PDF/요약 PNG/DOCX
+analysis.json → [ui-payload-builder] → ui_payload.json → [tools/render.py] → HTML → PDF/PNG/DOCX
 ```
+
+**렌더링에 에이전트를 쓰지 않는다** (v1.4 변경). 렌더러는 payload 값을 그대로 옮기고 아무것도 계산하지 않으므로 같은 payload면 항상 같은 바이트가 나온다. 값을 지어낼 수 없는 렌더러는 값을 왜곡할 수 없으니 결과를 재검수할 이유가 없다 — 검수는 payload에서 끝난다. 이전 v1.3의 html-mock-renderer·ui-render-qa 두 에이전트와 mock.html(93KB 디자인툴 export)은 제거했고, 실제로 HTML을 만들던 render.py를 `tools/render.py`로 승격했다.
 
 - **ui-payload-builder**: analysis.json에서 화면용 데이터를 추출하는 유일한 지점. 등급·판단 상태를 그대로 복사하고, 데이터 부족은 data_warnings, 원본 위치는 source_trace로 보존한다.
-- **html-mock-renderer**: ui_payload.json만 소비. 모바일 탐색 페이지와 단일 인쇄 문서 report.html을 정적으로 생성한다. 외부 리소스 0, mock 값 제거, 기준일·면책 필수.
-- **ui-render-qa**: HTML ↔ ui_payload ↔ analysis.json 3중 교차 대조, check_html.py 기계 검사, 모바일·인쇄 레이아웃과 추적성을 검수한다. fix 루프는 최대 2회다.
+- **tools/render.py**: ui_payload.json만 소비. 모바일 탐색 페이지(discovery_index·etf_{ticker}·compare)와 단일 인쇄 문서 report.html을 생성한다. 외부 리소스 0, 인라인 스타일, 430px 컨테이너, 기준일·면책 필수. 인쇄 문서는 페이지를 이어 붙이므로 히트맵 element id를 섹션별로 네임스페이스한다.
+- **check_html.py**: 미치환 플레이스홀더·금지 표현·태그 균형·중복 id·외부 리소스를 기계 검사한다. 0건이 아니면 payload 또는 render.py를 고친다.
 - **export_report.py**: QA 통과 HTML만 변환한다. PDF는 일회성 전체 보고서 기본, PNG는 discovery_index 요약 공유용, DOCX는 후편집 요청 시에만 사용한다. PDF·PNG는 Chrome/Chromium, DOCX는 pandoc 또는 macOS textutil을 사용하며 의존성을 자동 설치하지 않는다.
 
 `run_config.delivery_formats` 기본값은 `["pdf"]`다. HTML은 다른 전달 형식의 원본이므로 항상 보존한다. 도구가 없으면 HTML을 최종 폴백으로 남기고 누락 형식과 사유를 완료 보고에 명시한다.

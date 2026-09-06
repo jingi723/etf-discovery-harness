@@ -4,7 +4,7 @@ A [Claude Code](https://claude.ai/code) harness that narrows the market down to 
 short list of ETFs — **market regime → sector → theme → ETF candidates → verification** —
 and writes down the evidence, the risks, and what it could not find out.
 
-Seventeen specialised agents and seven skills handle regime diagnosis, theme evidence
+Fifteen specialised agents and seven skills handle regime diagnosis, theme evidence
 collection, holdings-level analysis, three independent grading axes, compliance QA,
 and report rendering. The output is never "buy this". Every candidate ends in one of
 four states: **worth reviewing / conditional / on hold / low priority**.
@@ -59,7 +59,7 @@ the coverage log, and an interactive ETF detail page you can open in a browser.
 
 ## The tools
 
-Three scripts you can run without Claude Code at all. They are the deterministic core;
+Four scripts you can run without Claude Code at all. They are the deterministic core;
 the agents call the same logic and explain the output.
 
 ### `tools/score.py` — seven indicators, three horizons
@@ -126,6 +126,20 @@ count), `fib618` (61.8% retracement break), `touch200`, `golden_cross`. Every ru
 prints the pattern's forward return next to the return of picking a random day. If it
 does not beat the baseline, it is noise — and the script says so.
 
+### `tools/render.py` — payload to static HTML
+
+Turns the pipeline's `ui_payload.json` into self-contained mobile pages — a constituent
+treemap sized by weight and coloured by grade, plus a single-document print version for
+PDF export. Deterministic: the same payload produces byte-identical HTML.
+
+```bash
+python3 tools/render.py path/to/ui_payload.json -o ./html
+```
+
+It copies payload values verbatim and computes nothing, which is why no agent reviews
+its output — a renderer that cannot invent a grade cannot misreport one. See
+[`examples/etf_SOXX.html`](examples/etf_SOXX.html).
+
 ### `tools/data.py` — market data, two optional backends
 
 Selected automatically by which environment variables are set. Handles gzip, 429
@@ -139,9 +153,10 @@ client**, so a fresh token silently invalidates the one another process is holdi
 ├── tools/                              # stdlib-only Python — runs without Claude Code
 │   ├── data.py                         # FMP + Toss Securities providers
 │   ├── score.py                        # 7 indicators × 3 horizons
-│   └── validate.py                     # pattern backtester
+│   ├── validate.py                     # pattern backtester
+│   └── render.py                       # ui_payload.json → static HTML
 ├── .claude/
-│   ├── agents/                         # 17 specialised agent definitions
+│   ├── agents/                         # 15 specialised agent definitions
 │   └── skills/
 │       ├── etf-discovery-orchestrator/ # main entry point, 13-phase pipeline
 │       ├── etf-signal-scoring/         # the 7-indicator framework
@@ -187,7 +202,7 @@ market regime
 | ETF candidates | `etf-candidate-finder`, `value-chain-mapper` |
 | Independent grading | `theme-structure-scorer`, `holdings-financial-scorer`, `holdings-valuation-scorer` |
 | Decision & reporting | `etf-evaluator`, `decision-gate`, `report-generator`, `qa-compliance-guard` |
-| Rendering | `ui-payload-builder`, `html-mock-renderer`, `ui-render-qa` |
+| Rendering | `ui-payload-builder`, then `tools/render.py` (a script, not an agent) |
 
 The three grading axes are deliberately forbidden from reading each other. A great
 theme story must not quietly upgrade a stretched multiple.

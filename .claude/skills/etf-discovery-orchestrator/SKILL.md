@@ -36,8 +36,7 @@ description: "ETF 발굴 에이전트 하네스의 오케스트레이터. '섹�
 | report-generator | 12 | 단일 | 13_reports/ (pilot 4종/full 5종) |
 | qa-compliance-guard | 13 | 단일 | 14_qa_report.json |
 | ui-payload-builder | 13.5a | 단일 | 15_ui/ui_payload.json (+audit) |
-| html-mock-renderer | 13.5b | 단일 | 15_ui/html/*.html (탐색 페이지 + 인쇄용 report.html) |
-| ui-render-qa | 13.5c | 단일 | 16_ui_render_qa.json/md |
+| *(스크립트)* `tools/render.py` | 13.5b | — | 15_ui/html/*.html |
 
 ## 워크플로우
 
@@ -99,19 +98,23 @@ shortlisted 테마마다 `theme-evidence-collector` 병렬 호출 (테마당 1, 
 2. verdict=fix_required면 fix_instructions를 포함해 `report-generator` 재호출 → QA 재호출. **최대 2회 반복.**
 3. 2회 후에도 미통과면 리포트 상단에 "QA 미통과 항목 존재 + 목록"을 표기하고 진행.
 
-### Phase 13.5: UI·일회성 보고서 전달 레이어 (순차 4단계 + 생성-검증 루프)
+### Phase 13.5: UI·일회성 보고서 전달 레이어 (에이전트 1 + 스크립트)
 
-리서치 QA 통과 후 실행. **이 레이어는 리서치 판단을 새로 만들지 않는다** — 상류 결과의 시각적 표현물일 뿐이다. 세 에이전트 모두 `etf-ui-render` 스킬을 따른다.
+리서치 QA 통과 후 실행. **이 레이어는 리서치 판단을 새로 만들지 않는다** — 상류 결과의 시각적 표현물일 뿐이다. `etf-ui-render` 스킬을 따른다.
 
-1. **13.5a**: `ui-payload-builder` 호출 → `_workspace/15_ui/ui_payload.json` + audit. analysis.json에서 화면용 데이터를 추출하는 유일한 지점.
-2. **13.5b**: `html-mock-renderer` 호출 → `_workspace/15_ui/html/` (discovery_index + finalist별 etf_{ticker} + compare + 인쇄용 report.html + render_notes). 렌더러는 ui_payload.json만 소비한다 (analysis.json 직접 읽기 금지).
-3. **13.5c**: `ui-render-qa` 호출 → `_workspace/16_ui_render_qa.json`. verdict=fix_required면 fix_instructions로 html-mock-renderer(payload 문제면 ui-payload-builder) 재호출 → 재검수. **최대 2회.** 2회 후 미통과면 HTML 상단에 "UI QA 미통과 항목 존재" 배너 표기 후 진행.
-4. **13.5d**: QA 통과 후 `delivery_formats`에 따라 `.claude/skills/etf-ui-render/scripts/export_report.py`를 실행한다. PDF·DOCX는 `report.html`, PNG는 짧은 요약인 `discovery_index.html`만 원본으로 사용한다. `--check` 결과 필요한 로컬 도구가 없으면 형식을 가짜로 만들지 말고 HTML을 보존한 뒤 완료 보고에 누락 사유를 명시한다.
+1. **13.5a**: `ui-payload-builder` 호출 → `_workspace/15_ui/ui_payload.json` + audit. analysis.json에서 화면용 데이터를 추출하는 **유일한 해석 지점**이므로 검수도 여기서 끝난다.
+2. **13.5b**: 렌더 스크립트 실행 — 에이전트를 쓰지 않는다.
+   ```bash
+   python3 tools/render.py _workspace/15_ui/ui_payload.json -o _workspace/15_ui/html/
+   python3 .claude/skills/etf-ui-render/scripts/check_html.py _workspace/15_ui/html/ --payload _workspace/15_ui/ui_payload.json
+   ```
+   `total_issues`가 0이 아니면 payload 또는 `tools/render.py`를 고치고 재실행한다. 렌더러는 payload 값을 그대로 옮기므로 등급·문구를 왜곡할 수 없다 — 같은 payload면 항상 같은 바이트가 나온다.
+3. **13.5c**: `delivery_formats`에 따라 `.claude/skills/etf-ui-render/scripts/export_report.py`를 실행한다. PNG는 `discovery_index.html`을 원본으로 쓴다. `--check` 결과 필요한 로컬 도구가 없으면 형식을 가짜로 만들지 말고 HTML을 보존한 뒤 완료 보고에 누락 사유를 명시한다.
 
-부분 재실행: "UI만 다시" 요청이면 13.5a부터 (상류 산출물 재사용), "HTML만 다시"면 13.5b부터, "PDF/이미지/Word만 다시"면 QA 통과한 기존 HTML을 사용해 13.5d만 실행한다.
+부분 재실행: "UI만 다시"면 13.5a부터 (상류 산출물 재사용), "HTML만 다시"면 13.5b만, "PDF/이미지만 다시"면 기존 HTML로 13.5c만 실행한다.
 
 ### Phase 14: 완료
-1. `_workspace/13_reports/` 산출물을 `output/{run_date}/`로, `_workspace/15_ui/`의 ui_payload.json·html/*·render_notes.md와 `_workspace/16_ui_render_qa.md`를 `output/{run_date}/ui/`로 복사한다. 선택한 PDF·PNG·DOCX는 `output/{run_date}/deliverables/`에 복사한다.
+1. `_workspace/13_reports/` 산출물을 `output/{run_date}/`로, `_workspace/15_ui/`의 ui_payload.json·html/*을 `output/{run_date}/ui/`로 복사한다. 선택한 PDF·PNG·DOCX는 `output/{run_date}/deliverables/`에 복사한다.
 2. `_workspace/` 보존 (감사 추적).
 3. 사용자 보고: 최종 후보와 판단 상태 요약, 데이터 부족·신뢰도 낮음 영역, QA 결과, 바로 공유할 deliverable 경로. 마지막에 피드백 기회 제공: "결과나 워크플로우에서 개선할 부분이 있나요?"
 
