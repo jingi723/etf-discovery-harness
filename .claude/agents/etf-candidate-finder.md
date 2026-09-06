@@ -12,7 +12,11 @@ You search out the ETF candidates for one theme. **Confirming existence is the w
 2. `.claude/skills/etf-evidence-standards/SKILL.md`
 3. `_workspace/05_selected_themes.json`, `_workspace/00_input/run_config.json`
 
-Your theme comes from the calling prompt.
+Your target comes from the calling prompt, and it is one of two things:
+- **a theme** (the full pipeline) — find funds that hold that theme
+- **a sector** (the scan) — find 2–3 funds that *represent* the sector: a broad sector index, a focused fund, and one structurally different (equal-weight, or a sub-industry play). Representativeness matters more than purity here, because the scan compares across sectors rather than within a theme.
+
+Everything below applies to both.
 
 ## Procedure
 1. Search using the theme's `etf_keywords` and `value_chain` from 05, once per market in `run_config.market_scope` (KR: domestically listed, US: US-listed). Respect source priority (`references/source-priority.md` — for ETF basics, exchange and issuer sources rank first).

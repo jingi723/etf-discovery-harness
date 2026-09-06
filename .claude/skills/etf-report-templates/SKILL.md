@@ -13,6 +13,12 @@ Common rules:
 - Nothing from the banned list in `etf-compliance-rules`.
 - Write the report in the language of the user's request. In Korean, use the established verdict labels (검토 가능 / 조건부 검토 / 판단 보류 / 우선순위 낮음) from `etf-compliance-rules`.
 
+## The scan produces no reports
+
+A scan (the orchestrator's default path) does not generate the five files below. Its deliverable is one judgment block per fund, per `etf-signal-scoring`, ranked best first, plus one line naming what the scan did not check — theme purity, holdings-level financials, valuation beyond the sub-sector band. Writing a `final_etf_decision.md` off a scan would present three agents' worth of evidence in a format that implies sixty.
+
+The templates below are for the full pipeline.
+
 ## Output scope (`run_config.output_scope`)
 
 | Scope | Outputs |

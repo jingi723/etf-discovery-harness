@@ -1,6 +1,6 @@
 ---
 name: etf-discovery-orchestrator
-description: "Orchestrator for the ETF discovery agent harness. Runs the 'sector → theme → ETF candidates → verification' pipeline to surface candidates and produce the final reports (4 in pilot scope, 5 in full), the mobile WebView UI, and one-off PDF / summary PNG / editable DOCX exports. Use this skill for any request to discover, analyse, or verify ETFs, to analyse sectors or themes, to diagnose the market regime, to compare ETF candidates, or to produce a candidate report. Also use it for follow-ups — re-running the analysis, updating it, re-running one stage only (themes again, reports again, re-verify one ETF, UI or PDF/image/Word only), improving or correcting a previous result, regenerating reports, and creating or modifying UI/HTML/WebView/PDF/PNG/DOCX output."
+description: "Orchestrator for the ETF discovery agent harness. Runs the 'sector → theme → ETF candidates → verification' pipeline to surface candidates and produce the final reports (4 in pilot scope, 5 in full), the mobile WebView UI, and one-off PDF / summary PNG / editable DOCX exports. Use this skill when the user has NOT named a fund — finding ETFs worth reviewing, analysing sectors or themes, diagnosing the market regime, or producing a candidate report from scratch. If the request names a ticker ('analyse LIT', 'how does SOXX look', 'compare SMH and SOXX'), the target is already chosen and etf-signal-scoring handles it instead — this pipeline starts from the whole market and may never reach the named fund. Also use it for follow-ups — re-running the analysis, updating it, re-running one stage only (themes again, reports again, re-verify one ETF, UI or PDF/image/Word only), improving or correcting a previous result, regenerating reports, and creating or modifying UI/HTML/WebView/PDF/PNG/DOCX output."
 ---
 
 # ETF Discovery Orchestrator
@@ -12,6 +12,36 @@ Coordinates the agent pipeline that narrows candidates in the order sector → t
 2. Never estimate what the data does not show — when it is short, say "analysis limited / low confidence / on hold".
 3. Keep score computation (scripts) separate from explanation (the model). Keep theme analysis (forward-looking) separate from holdings analysis (current financials).
 4. Every result carries its as-of date, sources, and confidence.
+
+## Two paths: scan or full
+
+**Default to the scan.** It answers "which funds in this market are worth a look, and what state are they in" with 3 agents and free scoring, and it ends in the same judgment format the single-ticker path produces. The full pipeline exists for when the answer has to be defensible in depth — it costs about 60 agents and millions of tokens, and most requests do not need that.
+
+| | Scan (default) | Full pipeline |
+|---|---|---|
+| Flow | regime → sectors → a few representative ETFs per sector → score | regime → sectors → themes → evidence → theme selection → candidates → value chains → 3 axes → gate → reports |
+| Agents | 3 | ~60 |
+| Cost | ~300k tokens + ~15 API calls per fund | 6–7M tokens |
+| Output | ranked funds, each as a judgment block | five reports, analysis.json, UI, PDF |
+| Answers | which to look at, and their current state | why, with evidence, purity, and a defensible verdict |
+| Misses | theme purity — an "AI chip ETF" that is 55% something else looks fine here | nothing, at that price |
+
+Run the full pipeline when the user asks for depth, evidence, or reports; when a scan result needs justifying; or when they say so. Ask before starting it if the request is ambiguous — it is the expensive direction.
+
+### The scan
+
+1. **Phase 2** — `market-regime-analyst`, as below. Needed either way: it sets `--macro`.
+2. **Phase 3** — `sector-scorer`, as below. Selects 3–5 sectors.
+3. **Phase S** — one `etf-candidate-finder` per selected sector, in parallel, prompted for **representative funds for the sector rather than for a theme**: 2–3 each, spread across types (a broad sector index, a focused fund, and one structurally different). It still fills `structure_trading`, so the hard gate still applies.
+4. **Phase S2** — score every candidate with `tools/score.py`, no agent:
+   ```bash
+   python3 tools/score.py {ticker} --horizon long  --macro {N} --holdings
+   python3 tools/score.py {ticker} --horizon swing --macro {N}
+   ```
+   Take `--macro` per sector from Phase 2 — **the same event flips sign between sectors**, so a single number for the whole run is wrong. Rank on the horizon the user asked about, long by default.
+5. **Phase S3** — emit each fund as a judgment block per `etf-signal-scoring`, best first, and say plainly what the scan did not check: theme purity, holdings-level financials, and valuation beyond the sub-sector band.
+
+Apply the structure/tradability gate from `etf-compliance-rules` before ranking — a leveraged or illiquid fund is excluded here exactly as it is in the full pipeline. Verdicts stay the four states; the scan just reaches them from less evidence, so it leans to "conditional" and "on hold" more often, and says why.
 
 ## Execution mode: subagents (pipeline + fan-out)
 

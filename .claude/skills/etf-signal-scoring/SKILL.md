@@ -1,6 +1,6 @@
 ---
 name: etf-signal-scoring
-description: "Standard for scoring one already-chosen stock or ETF across 7 indicators × 3 time horizons. Use this skill when asked what state a specific ticker is in right now, to write a daily or weekly judgment, to check an open position, to compare two tickers, to judge a leveraged ETF over days, to score constituents for a heatmap, or to validate a chart pattern statistically. The discovery pipeline (sector → theme → ETF) belongs to etf-discovery-orchestrator; this skill is for when the target is already decided."
+description: "Standard for scoring one already-chosen stock or ETF across 7 indicators × 3 time horizons. Use this skill whenever the request names a fund or stock — 'analyse LIT', 'how does SOXX look', 'is TIGER semiconductors worth holding' — and when asked what state a specific ticker is in right now, to write a daily or weekly judgment, to check an open position, to compare two tickers, to judge a leveraged ETF over days, to score constituents for a heatmap, or to validate a chart pattern statistically. The discovery pipeline (sector → theme → ETF) belongs to etf-discovery-orchestrator; this skill is for when the target is already decided."
 ---
 
 # Signal Scoring (7 indicators × 3 horizons)
@@ -122,21 +122,27 @@ Survived:
 
 ## Judgment output format (fixed)
 
-**This format is fixed.** Do not merge or drop lines. Asked about several tickers, emit this block separately for each.
+**This format is fixed, and it is the answer to any ticker request.** Do not merge or drop lines, and do not substitute the score table for it. Asked about several tickers, emit this block separately for each.
+
+`{holding/entry}` is `holding` when the user has a position and `entry` otherwise. With no position stated, write `entry` and give levels as where the case would start and stop being true, not as a stop-loss on a position that does not exist.
 
 It has to paste into a chat client, so **no markdown tables, headers, or blockquotes** — they break in messengers. Plain text and line breaks only.
 
 ```
 {TICKER} {holding/entry} call | {date} ({market} {weekday} close)
 
-Volume:      {multiple of the 20-day average} — reading
-Flows:       {put/call, investor-type net buying, ETF creations} — reading
-Chart:       {% from the 60-day high and low, support and resistance} — reading
+{●} Volume:     {multiple of the 20-day average} — reading            [{score}, weight {w}%]
+{●} Flows:      {put/call, investor-type net buying, ETF creations}   [{score}, weight {w}%]
+{●} Chart:      {% from the 60-day high and low, support/resistance}  [{score}, weight {w}%]
+{●} Momentum:   {20-day return and whether volume confirms it}        [{score}, weight {w}%]
+{●} Position:   {where in the 60-day range, distance from the 200-day}[{score}, weight {w}%]
+{●} Valuation:  {top holdings against the sub-sector band}            [{score}, weight {w}%]
+{●} External:   {rates, FX, policy — and its sign for THIS sector}    [{score}, weight {w}%]
+{●} Total:      {weighted score}/100 on the {horizon} profile
+
 Holdings:    {top 8 by 60-day position and trend (20>60), count} — does "most constituents are near a bottom" hold?
 Events:      {today's and this week's catalysts, plus any pattern validated with historical numbers}
-Valuation:   {top holdings' P/E and EV/EBITDA against the sub-sector band} — cheap or rich
-External:    {rates, FX, policy}
-Constituents: 🔴 {strong} / 🟡 {watch} / 🔵 {weak}
+Constituents: 🔴 {tickers} / 🟠 {tickers} / 🟡 {tickers} / 🟢 {tickers} / 🔵 {tickers}
 
 Structural reason: {2–3 sentences on why it is in this state, from industry structure — not from the scores}
 
@@ -148,14 +154,19 @@ For a Korean request, use the Korean field labels — this is the established wo
 ```
 {티커} {보유/진입} 판단 | {날짜} ({시장} {요일} 종가 기준)
 
-거래량: {20일 평균 대비 배율} — 해석
-수급: {풋/콜, 투자자별 순매수, ETF 자금유출입} — 해석
-차트(지수): {60일 고점·저점 대비 %, 지지·저항 레벨} — 해석
+{●} 거래량·수급: {20일 평균 대비 배율, 투자자별 순매수, 풋/콜} — 해석   [{점수}, 가중 {w}%]
+{●} 차트(추세): {20선·60선 관계, 지지·저항} — 해석                      [{점수}, 가중 {w}%]
+{●} 모멘텀: {20일 수익률 + 거래량 동반 여부} — 해석                      [{점수}, 가중 {w}%]
+{●} 위치·바닥: {60일 레인지 내 위치, 200선 이격} — 해석                  [{점수}, 가중 {w}%]
+{●} 상대강도: {벤치마크 대비 20일 초과수익} — 해석                       [{점수}, 가중 {w}%]
+{●} 가격 적정성: {상위 종목을 서브섹터 밴드 대비} — 해석                  [{점수}, 가중 {w}%]
+{●} 외부 요인: {금리·환율·정책 — 이 섹터에 주는 부호} — 해석             [{점수}, 가중 {w}%]
+{●} 종합: {가중 점수}/100 ({시간축} 기준)
 차트(구성종목): {상위 8종목의 60일 위치·추세(20선>60선) 개수} — "구성종목 대부분 바닥" 조건 충족 여부
 이벤트: {오늘·이번 주 재료 + 과거 사례 수치로 검증한 패턴}
 가격 적정성: {상위 종목 PER·EV/EBITDA를 서브섹터 밴드 대비} — 싸다/비싸다
 외부 요인: {금리·환율·정책}
-구성종목: 🔴 {강함} / 🟡 {주의} / 🔵 {약함}
+구성종목: 🔴 {티커} / 🟠 {티커} / 🟡 {티커} / 🟢 {티커} / 🔵 {티커}
 
 구조적 이유: {점수가 아니라 산업 구조로 왜 이런 상태인지 2~3문장}
 
@@ -164,6 +175,8 @@ For a Korean request, use the Korean field labels — this is the established wo
 
 Rules:
 - Each line reads `label: figure — reading`. **Figure first, interpretation second.** No impressions, no feel.
+- **Every indicator line carries its own sticker and score**, taken from `tools/score.py` output — not assigned by eye. Same for the constituents line: score each holding and let the band decide its colour. Hand-picking a sticker is the same violation as hand-picking a grade.
+- Constituent stickers use all five bands, not three. Collapsing 🟠 into 🔴 or 🟢 into 🔵 loses the distinction the bands exist for.
 - **Only the conclusion is conversational.** The indicator lines stay compressed and declarative.
 - **Never drop the constituents line.** For an ETF, holdings are not an optional extra.
 - **Never drop the structural reason.** Listing scores without it leaves out why.

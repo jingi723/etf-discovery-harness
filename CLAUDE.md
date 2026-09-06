@@ -2,9 +2,14 @@
 
 **Goal:** surface investment-candidate ETFs in the order sector → theme → ETF candidates → verification, and produce five structured reports covering the evidence and the risks — never a buy or sell recommendation.
 
-**Two triggers:**
-- **Discovery** — for any request to discover, analyse, or verify ETFs, analyse sectors or themes, diagnose the market regime, or produce a candidate report, use `etf-discovery-orchestrator`. The same applies to partial re-runs ("themes again", "reports again", "re-verify ETF X").
-- **Scoring** — when the target is already chosen (how a specific ticker looks right now, a daily judgment, a position check, a head-to-head comparison, validating a pattern), use `etf-signal-scoring`. Computation happens in `tools/score.py` and `tools/validate.py`; the model only interprets.
+**Two triggers. The discriminator is whether the request names a fund.**
+
+- **A ticker is named** — "analyse LIT", "how does SOXX look", "should I keep holding this", "compare SMH and SOXX", a daily judgment, validating a pattern → `etf-signal-scoring`. Computation happens in `tools/score.py` and `tools/validate.py`; the model only interprets. Costs a handful of API calls and one turn.
+- **No ticker is named** — "find ETF candidates worth reviewing", "what looks good in this market", analysing a sector or theme, diagnosing the regime → `etf-discovery-orchestrator`, which itself has two paths. **The scan is the default**: regime → sectors → a few representative ETFs each → score, 3 agents, ending in the same judgment blocks. The full pipeline (~60 agents, millions of tokens) runs only when depth, evidence, or reports are asked for — ask first if it is unclear.
+
+Either way the deliverable is the judgment block defined in `etf-signal-scoring` — indicator lines with their own stickers and scores, constituent stickers from scoring not from eye, then the structural reason and a colloquial conclusion. A score table is working material, not an answer.
+
+Getting this wrong is expensive in one direction only: routing a named ticker into the discovery pipeline spends a full run starting from the whole market, and may never reach the fund that was asked about. When in doubt, and a ticker is in the request, score it.
 
 Simple questions can be answered directly.
 
