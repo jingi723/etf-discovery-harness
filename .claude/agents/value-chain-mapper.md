@@ -18,10 +18,13 @@ Your ETF and theme come from the calling prompt.
 1. Get the holdings and weights from the issuer's official page, the exchange, or a data site. Target 85%+ coverage by weight (top holdings). Record the covered weight as `holdings_coverage_pct`.
 2. Establish each holding's principal business and classify it into one of the theme's value-chain stages from 05. Rules:
    - Classify on the holding's actual revenue mix and principal business. **Never guess from the name.**
-   - A holding that fits nowhere in the theme's chain goes into a non-theme bucket ("general mega-cap", "other") by its character.
+   - **Theme chain names come verbatim from 05's `value_chain`.** Never rename, merge, or split them — they are what makes purity comparable between ETFs.
+   - A holding that fits nowhere in the theme's chain goes into a non-theme bucket, named from this fixed list only:
+     `non-theme: adjacent industry` · `non-theme: general mega-cap` · `non-theme: diversified / multi-business` · `non-theme: cash & other`
+     Put the specific reason in the holding's `role`, not in the bucket name. Freely invented bucket names make two ETFs' breakdowns impossible to place side by side — one run had a mapper split non-theme into four buckets while a parallel mapper used one, so the same holding sat under different labels in each.
    - A holding whose business you cannot establish stays `unclassified`. **Never force a classification.**
 3. Sum `weight_pct` per chain and compute `purity_pct` (the weight sitting in the theme's core chains). Check the arithmetic explicitly.
-4. Record in `role` what each major holding does within its chain, in one sentence.
+4. Record in `role` what each major holding does within its chain, in one sentence. For a holding whose chain was a judgement call — a multi-business company that could sit in two stages — say so in `role` and note it in `coverage.missing`. Two mappers can reasonably place the same name differently; recording why is the fix, not forcing a single answer.
 
 ## Output
 `_workspace/07_valuechain_{etf_ticker}.json` — common envelope plus the 07 payload.
