@@ -98,12 +98,12 @@ def squarify(items, x, y, w, h):
 def page(t, r, gate, meta):
     bg, fg, name = band(r["swing"])
     rows = "".join(
-        f'<div style="display:flex;align-items:center;gap:8px;padding:7px 0;'
-        f'border-bottom:1px solid #F2F4F6;">'
-        f'<span style="width:18px;">{dot(v) if v is not None else "⚪"}</span>'
-        f'<span style="flex:1;font-size:12.5px;font-weight:600;">{e(LBL[k])}</span>'
-        f'<span style="{MUT}">weight {r["weights"][k]}%</span>'
-        f'<span style="width:44px;text-align:right;font-size:13px;font-weight:800;">'
+        f'<div class="row">'
+        f'<span style="width:16px;flex:none;">{dot(v) if v is not None else "⚪"}</span>'
+        f'<span style="flex:1;min-width:0;font-size:12.5px;font-weight:600;'
+        f'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{e(LBL[k])}</span>'
+        f'<span style="{MUT}flex:none;white-space:nowrap;">wt {r["weights"][k]}%</span>'
+        f'<span style="width:34px;flex:none;text-align:right;font-size:13px;font-weight:800;">'
         f'{v if v is not None else "n/a"}</span></div>'
         for k, v in r["parts"].items())
 
@@ -134,10 +134,12 @@ def page(t, r, gate, meta):
 <title>{e(t)} scan</title>
 <style>
  *{{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;}}
- body{{background:#E7EAEE;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;color:#1A1D21;}}
+ body{{background:#E7EAEE;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;color:#1A1D21;
+       overflow-x:hidden;}}
+ .row{{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #F2F4F6;}}
 </style></head><body>
-<div style="min-height:100vh;display:flex;justify-content:center;">
-<div style="width:100%;max-width:430px;background:#F4F6F8;">
+<div style="min-height:100vh;">
+<div style="width:100%;max-width:430px;margin:0 auto;background:#F4F6F8;overflow:hidden;">
  <div style="background:#fff;border-bottom:1px solid #EAEDF0;padding:14px;">
   <div style="font-size:17px;font-weight:800;">{e(meta['names'].get(t, t))}</div>
   <div style="{MUT}margin-top:2px;">{e(t)} · {e(meta['sectors'].get(t,''))} · close {r['close']:,.2f} ({r['chg']:+.2f}%)</div>

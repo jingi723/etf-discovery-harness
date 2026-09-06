@@ -18,23 +18,22 @@ in one of four states: **worth reviewing / conditional / on hold / low priority*
 > a recommendation to buy or sell any security.
 
 <p align="center">
-  <img src="docs/images/scan-analysis.png" width="47%" alt="Scan output for one ETF: a one-month score of 49.5, then each of the seven indicators with its own colour band, score and weight">
-  <img src="docs/images/scan-holdings.png" width="47%" alt="The same fund's top holdings as a treemap, each tile sized by weight and coloured by that holding's own score, with a legend">
+  <img src="docs/images/scan-output.png" width="42%" alt="Scan output for one ETF: a one-month score of 49.5, each of the seven indicators with its own colour, score and weight, then the top holdings as a treemap sized by weight and coloured by each holding's own score">
 </p>
 <p align="center">
-  <sub><b>The default output.</b> Every indicator carries its own score, weight and band —
-  and the constituent colours come from scoring each holding, not from eye.<br>
-  Colours follow the Korean market convention, where red is the strong end.
-  Real output from <a href="examples/scan/">examples/scan/</a>.</sub>
+  <sub><b>The default output.</b> Every indicator carries its own score, weight and colour,
+  and the constituent colours come from scoring each holding rather than from eye.<br>
+  Colours follow the Korean market convention, where red is the strong end.</sub>
 </p>
 
 <p align="center">
-  <img src="docs/images/holdings-heatmap.png" width="72%" alt="Constituent score map from the full pipeline: a treemap where each tile is a holding, sized by portfolio weight and coloured by its financial grade">
+  <img src="docs/images/holdings-heatmap.png" width="62%" alt="Constituent score map from the full pipeline: a treemap where each tile is a holding, sized by portfolio weight and coloured by its financial grade">
 </p>
 <p align="center">
   <sub><b>What the full pipeline adds.</b> The same map, coloured by a graded financial
-  assessment of each holding rather than by its price signal — Micron at 8.16% carries an
-  A+, Intel at 6.17% a C−. Getting there costs about sixty agents instead of three.</sub>
+  assessment of each holding instead of a price signal — Micron at 8.16% carries an A+,
+  Intel at 6.17% a C−. Sixty agents rather than three. Both are real output; see
+  <a href="examples/">examples/</a>.</sub>
 </p>
 
 ## Why this exists

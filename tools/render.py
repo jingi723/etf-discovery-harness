@@ -149,8 +149,8 @@ def page_shell(title, body, footer_dates):
   details summary::-webkit-details-marker {{ display:none; }}
 </style></head>
 <body>
-<div style="min-height:100vh;display:flex;justify-content:center;background:#E7EAEE;">
-<div style="width:100%;max-width:430px;background:#F4F6F8;position:relative;color:#1A1D21;overflow:hidden;">
+<div style="min-height:100vh;background:#E7EAEE;">
+<div style="width:100%;max-width:430px;margin:0 auto;background:#F4F6F8;position:relative;color:#1A1D21;overflow:hidden;">
 {body}
   <div style="{CARD}margin-bottom:0;">
     <div style="font-size:12px;font-weight:800;margin-bottom:8px;">Data basis</div>
