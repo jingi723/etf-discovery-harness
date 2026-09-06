@@ -95,7 +95,9 @@ Then apply the structure/tradability gate from `etf-compliance-rules`, run **Pha
 
 ### Phase S-end: deliver (scan path only)
 
-Emit one judgment block per fund, per `etf-signal-scoring`, best first on the horizon the user asked about (long by default). Close with one line naming what the scan did not check: theme purity, holdings-level financials, and valuation beyond the sub-sector band.
+Emit one judgment block per fund, per `etf-signal-scoring`, best first on the horizon the user asked about (long by default).
+
+**When two funds tie, say so — do not manufacture an order.** A tie means they occupy the same signal state, and subdividing bands until they differ is fitting noise. Name what the scan does not measure that would separate them, and offer the full pipeline if it matters. A 2026-09-06 scan tied XLE and XOP on all seven indicators; their inputs agreed in direction and magnitude on every one, and what actually separates them is structure — XLE is 35% two mega-caps, XOP is 51 names near-equally weighted — which Phase 8's value-chain mapping would show and this path does not. Close with one line naming what the scan did not check: theme purity, holdings-level financials, and valuation beyond the sub-sector band.
 
 Verdicts still come from the four states, reached from less evidence — so a scan lands on "conditional" and "on hold" more often, and says why. Copy `_workspace/` outputs to `output/{run_date}/` and report the token total from `agent_costs.json`.
 

@@ -107,7 +107,18 @@ def score_rs(t):
 
 
 def score_flow(t):
-    return 60 if t["vol_ratio"] > 0.9 else 40
+    """Volume trend: last 20 sessions against the 40 before them.
+
+    Five bands like every other indicator. It used to have one threshold and
+    two outcomes, which meant it returned the same value for six funds whose
+    ratios ran from 0.55 to 1.00 — a whole indicator saying nothing.
+
+    This is a weak proxy for flows either way: it sees participation, not who
+    is buying. Where put/call or investor-type data exists, quote that in the
+    judgment and say the score rests on the proxy.
+    """
+    r = t["vol_ratio"]
+    return 100 if r > 1.3 else 75 if r > 1.05 else 50 if r > 0.85 else 25 if r > 0.65 else 0
 
 
 def score_value(symbol, sub_sector=None):
@@ -248,6 +259,11 @@ def demo():
 
     assert score_value("X", "miner") == 50, "cyclicals skip the P/E"
     assert PE_BANDS["memory"] == (8, 15)
+
+    # every indicator must be able to return more than two values, or it is
+    # carrying weight while saying nothing
+    flows = {score_flow({"vol_ratio": r}) for r in (0.4, 0.7, 0.9, 1.1, 1.5)}
+    assert len(flows) == 5, flows
     print("ok")
 
 

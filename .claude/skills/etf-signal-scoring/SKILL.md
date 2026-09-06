@@ -63,6 +63,7 @@ Every horizon uses the **same seven**. Only the weights and measurement windows 
 This matters most for **valuation on an ETF**: FMP's `ratios-ttm` returns nothing for a fund, so `value` reads `n/a`. That is correct — an ETF has no P/E of its own. To grade an ETF's valuation, score its holdings (`--holdings`, or the pipeline's holdings-valuation-scorer). Never let a gap stand in as a number.
 
 - **The flow indicator only looks at the volume trend.** In `tools/score.py` it is 20-day volume over the prior 40-day volume — a weak proxy. If you obtained put/call or investor-type flow, quote those figures in the judgment and note that the score itself rests on the proxy.
+- **Two funds can legitimately tie.** Say so rather than inventing an order. If every indicator reads the same, they are in the same signal state, and what separates them is usually structure — concentration, replication, purity — which this framework does not measure. Point at what would settle it instead of splitting hairs on a score.
 - **Leave an indicator empty rather than filling it with the wrong thing.** Korean semiconductor flows were dropped during a period when shareholder-return programmes, not sector conviction, drove the numbers. A missing indicator is honest; a misleading one is not.
 
 ## Three horizons and their weights
