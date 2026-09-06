@@ -120,7 +120,7 @@ Survived:
 2. **Support is defended by a higher low, not by a close back above the level.** Lows of 498.93 → 495.09 → 493.31 → 489.21 closed back above the level every time while support was breaking down.
 3. **Do not smuggle in judgment from outside the score.** To argue the second-ranked name is actually better, either say explicitly what you added outside the score, or fold that basis in as an indicator.
 
-## Judgment output format (fixed)
+## The judgment block (fixed format)
 
 **This format is fixed, and it is the answer to any ticker request.** Do not merge or drop lines, and do not substitute the score table for it. Asked about several tickers, emit this block separately for each.
 

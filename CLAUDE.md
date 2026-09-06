@@ -5,7 +5,7 @@
 **Two triggers. The discriminator is whether the request names a fund.**
 
 - **A ticker is named** — "analyse LIT", "how does SOXX look", "should I keep holding this", "compare SMH and SOXX", a daily judgment, validating a pattern → `etf-signal-scoring`. Computation happens in `tools/score.py` and `tools/validate.py`; the model only interprets. Costs a handful of API calls and one turn.
-- **No ticker is named** — "find ETF candidates worth reviewing", "what looks good in this market", analysing a sector or theme, diagnosing the regime → `etf-discovery-orchestrator`, which itself has two paths. **The scan is the default**: regime → sectors → a few representative ETFs each → score, 3 agents, ending in the same judgment blocks. The full pipeline (~60 agents, millions of tokens) runs only when depth, evidence, or reports are asked for — ask first if it is unclear.
+- **No ticker is named** — "find ETF candidates worth reviewing", "what looks good in this market", "analyse the semiconductor sector", diagnosing the regime → `etf-discovery-orchestrator`. It shares phases 0–3 and then forks on depth. **The scan is the default**: representative ETFs per sector, scored, 3 agents. The full pipeline (~60 agents, millions of tokens) runs only when depth, evidence, or reports are asked for — **ask before starting it if that is unclear**, and note a scan can be deepened afterwards from the same workspace.
 
 Either way the deliverable is the judgment block defined in `etf-signal-scoring` — indicator lines with their own stickers and scores, constituent stickers from scoring not from eye, then the structural reason and a colloquial conclusion. A score table is working material, not an answer.
 

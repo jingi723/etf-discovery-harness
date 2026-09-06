@@ -210,28 +210,58 @@ ask in, so an English request produces an English report on either branch.
 
 The sample run in `examples/` predates the translation and is in Korean.
 
-## The discovery pipeline
+## Two ways in, and two depths
+
+Which path runs is decided by one question: **does the request name a fund?**
 
 ```text
-market regime
-  → sector scoring
-  → theme discovery + two-sided evidence
-  → theme selection
-  → ETF candidate search
-  → holdings & value-chain mapping
-  → three independent axes: theme structure / financials / valuation
-  → ETF structure & tradability hard gate
-  → four-state decision gate
-  → report QA
-  → mobile WebView + print HTML QA
-  → PDF / PNG / DOCX export
+"how does SOXX look"          →  score it            3 API calls, 1 turn
+"what's worth a look"         →  scan               ~3 agents
+"...and I need the evidence"  →  full pipeline      ~60 agents
 ```
+
+A named ticker never enters the pipeline. It goes straight to the seven-indicator
+scoring above and comes back as a judgment block. Routing it into discovery would
+spend a market-wide run that might never reach the fund that was asked about.
+
+When no fund is named, discovery runs — sharing its first four phases and then
+forking on depth:
+
+```text
+market regime → sector scoring
+      │
+      ├── scan (default) ── representative ETFs per sector → score → judgment blocks
+      │
+      └── full ─────────── theme discovery + two-sided evidence
+                            → theme selection
+                            → ETF candidate search
+                            → holdings & value-chain mapping
+                            → three independent axes: theme structure / financials / valuation
+                            → structure & tradability hard gate
+                            → four-state decision gate
+                            → current-state scoring
+                            → report QA → WebView + print HTML → PDF / PNG / DOCX
+```
+
+The scan answers *what is worth a look and what state is it in*. The full pipeline
+answers *why, with the evidence*, and is the one that produces the five reports. A
+scan can be deepened afterwards from the same workspace, so the cheap path is never
+a dead end.
+
+**What the scan misses is theme purity.** In one run, two funds that both call
+themselves semiconductor ETFs turned out to hold 55% and 50% of their weight
+*outside* the theme's own value chain — visible only once every holding is
+classified, which is the full pipeline's job.
+
+Every path ends in the same judgment block: one line per indicator with its own
+score and colour, constituent colours from scoring rather than from eye, then the
+structural reason and a plain-language conclusion.
 
 | Stage | Agents |
 |---|---|
-| Market & sector | `market-regime-analyst`, `sector-scorer` |
+| Market & sector (both paths) | `market-regime-analyst`, `sector-scorer` |
 | Theme discovery | `theme-discoverer`, `theme-evidence-collector`, `theme-ranker` |
-| ETF candidates | `etf-candidate-finder`, `value-chain-mapper` |
+| ETF candidates | `etf-candidate-finder` (takes a sector on the scan, a theme on the full path), `value-chain-mapper` |
 | Independent grading | `theme-structure-scorer`, `holdings-financial-scorer`, `holdings-valuation-scorer` |
 | Decision & reporting | `etf-evaluator`, `decision-gate`, `report-generator`, `qa-compliance-guard` |
 | Rendering | `ui-payload-builder`, then `tools/render.py` (a script, not an agent) |

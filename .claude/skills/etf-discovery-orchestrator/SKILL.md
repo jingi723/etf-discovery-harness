@@ -13,35 +13,29 @@ Coordinates the agent pipeline that narrows candidates in the order sector → t
 3. Keep score computation (scripts) separate from explanation (the model). Keep theme analysis (forward-looking) separate from holdings analysis (current financials).
 4. Every result carries its as-of date, sources, and confidence.
 
-## Two paths: scan or full
+## Two depths, one workflow
 
-**Default to the scan.** It answers "which funds in this market are worth a look, and what state are they in" with 3 agents and free scoring, and it ends in the same judgment format the single-ticker path produces. The full pipeline exists for when the answer has to be defensible in depth — it costs about 60 agents and millions of tokens, and most requests do not need that.
+Phases 0–3 are shared. **After sector selection the run forks**, and the fork is the only structural choice:
 
-| | Scan (default) | Full pipeline |
+| | Scan (default) | Full |
 |---|---|---|
-| Flow | regime → sectors → a few representative ETFs per sector → score | regime → sectors → themes → evidence → theme selection → candidates → value chains → 3 axes → gate → reports |
+| After Phase 3 | Phase S: representative ETFs per sector → Phase 11.5 scoring → judgment blocks | Phases 4–14: themes, evidence, candidates, value chains, three axes, gate, reports |
 | Agents | 3 | ~60 |
 | Cost | ~300k tokens + ~15 API calls per fund | 6–7M tokens |
-| Output | ranked funds, each as a judgment block | five reports, analysis.json, UI, PDF |
-| Answers | which to look at, and their current state | why, with evidence, purity, and a defensible verdict |
-| Misses | theme purity — an "AI chip ETF" that is 55% something else looks fine here | nothing, at that price |
+| Output | one judgment block per fund, ranked | five reports, analysis.json, UI, PDF |
+| Misses | theme purity — a fund that is 55% outside its own theme looks fine here | nothing, at that price |
 
-Run the full pipeline when the user asks for depth, evidence, or reports; when a scan result needs justifying; or when they say so. Ask before starting it if the request is ambiguous — it is the expensive direction.
+**Choosing the depth:**
 
-### The scan
+| Request | Path |
+|---|---|
+| "what's worth a look", "find ETF candidates" | Scan |
+| "analyse the semiconductor sector" | Scan — sector-level, no fund named |
+| "which of these is better and why", "I need the evidence" | Full |
+| "make me the report / PDF / UI" | Full |
+| a named ticker | Neither — `etf-signal-scoring` handles it |
 
-1. **Phase 2** — `market-regime-analyst`, as below. Needed either way: it sets `--macro`.
-2. **Phase 3** — `sector-scorer`, as below. Selects 3–5 sectors.
-3. **Phase S** — one `etf-candidate-finder` per selected sector, in parallel, prompted for **representative funds for the sector rather than for a theme**: 2–3 each, spread across types (a broad sector index, a focused fund, and one structurally different). It still fills `structure_trading`, so the hard gate still applies.
-4. **Phase S2** — score every candidate with `tools/score.py`, no agent:
-   ```bash
-   python3 tools/score.py {ticker} --horizon long  --macro {N} --holdings
-   python3 tools/score.py {ticker} --horizon swing --macro {N}
-   ```
-   Take `--macro` per sector from Phase 2 — **the same event flips sign between sectors**, so a single number for the whole run is wrong. Rank on the horizon the user asked about, long by default.
-5. **Phase S3** — emit each fund as a judgment block per `etf-signal-scoring`, best first, and say plainly what the scan did not check: theme purity, holdings-level financials, and valuation beyond the sub-sector band.
-
-Apply the structure/tradability gate from `etf-compliance-rules` before ranking — a leveraged or illiquid fund is excluded here exactly as it is in the full pipeline. Verdicts stay the four states; the scan just reaches them from less evidence, so it leans to "conditional" and "on hold" more often, and says why.
+Run the full pipeline when depth, evidence, or reports are asked for, or when a scan result needs justifying. **If it is ambiguous, ask before starting it** — it is the expensive direction, and the scan can always be deepened afterwards by continuing from Phase 4 with the same workspace.
 
 ## Execution mode: subagents (pipeline + fan-out)
 
@@ -78,10 +72,13 @@ Chosen because data flows between stages through a strict file contract (`refere
    - **Present + partial-change request** (e.g. "reports again", "redo the themes", "re-verify ETF X") → **partial re-run**: find the earliest phase the request touches and re-run from there downstream only. Reuse upstream output as-is. Include the existing output paths and the user's feedback in that agent's prompt.
    - **Present + new-run request** (different as-of date, new constraints) → move the existing `_workspace/` to `_workspace_{YYYYMMDD_HHMMSS}/`, then run from the start.
 3. Downstream propagation on a partial re-run: if 05 changes, everything from 06 onward re-runs. The dependency graph follows the phase order in the table above.
+4. Settle the depth here, before Phase 1 — scan or full, per the table above. A scan's workspace is a valid starting point for a later full run.
 
 ### Phase 1: setup + data coverage pre-check
 
 1. Write `_workspace/00_input/run_config.json` per the schema in data-contracts. When the user has not specified a scope, use the MVP defaults: `sectors_scope` = [information technology, industrials, healthcare, energy & power, communications], `max_etf_per_theme`=5, `deep_score_etf_per_theme`=3, `selected_themes_count`=3, and **`output_scope` = "pilot" on a first run** (4 outputs — `etf_candidates.md` folded into `final_etf_decision.md`), "full" afterwards. `delivery_formats` defaults to `["pdf"]`; add html for interactive browsing, png for a short shareable image, docx for later editing. Put the provisional defaults from data-contracts into `structure_gate_thresholds` (minimums for AUM, turnover, spread, premium/discount, listing age) and tune them after the MVP run. Fix the `slug_map` here.
+**On the scan path**, write run_config with `output_scope: "scan"` and skip step 2 — a three-agent run cannot spend a phase probing sources, and `tools/score.py` fails loudly if the data is not there. Fill `sectors_scope`, `market_scope` and `structure_gate_thresholds`; the theme and deep-score parameters do not apply.
+
 2. **Coverage pre-check** → `_workspace/00_coverage_precheck.md`: make one sample query against each major data source (macro indicators, KR/US ETF information, holdings, financial and price data) and record whether it is reachable. If a core source is blocked, tell the user and settle whether to narrow scope (KR only, say) before continuing. This becomes the "pre-check" section of the final `data_coverage.md`.
 
 ### Phase 2: market regime
@@ -89,6 +86,20 @@ One `Agent(subagent_type: "market-regime-analyst", model: "opus")` call. State t
 
 ### Phase 3: sector scoring
 `Agent(subagent_type: "sector-scorer", model: "opus")`, after 01 completes. Check `selected_sectors` (3–5) on completion — warn the user and continue if it is 2 or fewer.
+
+### Phase S: representative ETFs (scan path only)
+
+One `etf-candidate-finder` per selected sector, in parallel, prompted for **representative funds for the sector rather than for a theme** — 2–3 each, spread across types (a broad sector index, a focused fund, one structurally different). It fills `structure_trading` as usual, so the hard gate still applies. Output: `_workspace/06_etf_candidates_{sector_slug}.json`.
+
+Then apply the structure/tradability gate from `etf-compliance-rules`, run **Phase 11.5** (below) to score every surviving candidate, and finish at **Phase S-end**. Do not run Phases 4–10.
+
+### Phase S-end: deliver (scan path only)
+
+Emit one judgment block per fund, per `etf-signal-scoring`, best first on the horizon the user asked about (long by default). Close with one line naming what the scan did not check: theme purity, holdings-level financials, and valuation beyond the sub-sector band.
+
+Verdicts still come from the four states, reached from less evidence — so a scan lands on "conditional" and "on hold" more often, and says why. Copy `_workspace/` outputs to `output/{run_date}/` and report the token total from `agent_costs.json`.
+
+To deepen a scan afterwards, continue from Phase 4 against the same workspace; Phases 2–3 and any candidates already found are reused.
 
 ### Phase 4: theme discovery (fan-out)
 One `Agent(subagent_type: "theme-discoverer", model: "opus", run_in_background: true)` per selected sector, **all called in parallel in a single message**. State the assigned sector and the output slug in each prompt.
@@ -130,9 +141,11 @@ One `etf-evaluator` call, after every score file is complete (barrier). Alongsid
 ### Phase 11: Decision Gate
 One `decision-gate` call. Order: coverage gate → structure/tradability hard gate → three-axis grade gate → explicit risk gate → final state.
 
-### Phase 11.5: current-state scoring (script, no agent)
+### Phase 11.5: current-state scoring (script, no agent) — both paths
 
-The three axes answer *is this product sound*. They say nothing about *what state it is in right now*, so a finalist can carry good grades while every one of its largest holdings is rolling over. Score the finalists with the same framework the single-ticker path uses:
+**The scan's scoring step and the full pipeline's are the same step, defined here once.** The full pipeline runs it over finalists after the Decision Gate; the scan runs it over every candidate that clears the structure gate.
+
+The three axes answer *is this product sound*. They say nothing about *what state it is in right now*, so a finalist can carry good grades while every one of its largest holdings is rolling over. Score with the same framework the single-ticker path uses:
 
 ```bash
 python3 tools/score.py {ticker} --horizon long  --macro {N} --holdings
