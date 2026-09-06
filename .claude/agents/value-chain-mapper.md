@@ -29,6 +29,14 @@ Your ETF and theme come from the calling prompt.
 ## Output
 `_workspace/07_valuechain_{etf_ticker}.json` — common envelope plus the 07 payload.
 
+**Non-theme buckets go in `chains` with their holdings enumerated, exactly as theme chains do.** Chain weights plus `unclassified_pct` must close on ~100%: a file listing only the theme chains reads as a 100%-in-theme fund to everything downstream. Before finishing, run:
+
+```bash
+python3 tools/check_workspace.py _workspace/07_valuechain_{ticker}.json
+```
+
+and confirm zero failures.
+
 ## Failure and missing data
 - Below 60% holdings coverage, still compute `purity_pct` but set confidence to low and state "value-chain mapping limited".
 - If you cannot obtain holdings at all, return a failure rather than an output — this ETF cannot be scored downstream.

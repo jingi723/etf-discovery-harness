@@ -80,6 +80,14 @@ One `etf-candidate-finder` per selected theme, in parallel.
 ### Phase 8: value-chain mapping (fan-out)
 One `value-chain-mapper` per candidate ETF, in parallel (max 6 concurrent, batched). Retry a failed ETF once, then drop it from the candidate set and record that.
 
+**After every fan-out stage completes, validate the contract before moving on:**
+
+```bash
+python3 tools/check_workspace.py _workspace/
+```
+
+Zero failures required. An agent cannot catch this class of error in itself — its summary can be right while the file it wrote is not. One run had a mapper report "62 holdings, 55.31% weight, non-theme" and then omit that bucket from `chains`, leaving the fund reading as 100% in-theme to every downstream consumer. Re-call the agent with the failure text; do not hand-patch the file.
+
 ### Phase 8.5: shortlist for deep scoring (orchestrator does this directly)
 Using `purity_pct` from the 07 files, send only the top `deep_score_etf_per_theme` (default 3) per theme to Phase 9. For type diversity, one broad-index or blended fund may be included as a comparison even if it is not top by purity. Excluded ETFs are marked "not deeply analysed" at stage 11.
 
