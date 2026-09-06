@@ -1,105 +1,107 @@
 ---
 name: etf-grading-standards
-description: "ETF 분석 하네스의 등급 산정 표준. 섹터 점수, 테마 구조, 재무 상태, 가격 적정성 등 모든 등급(A+~D) 계산 시 반드시 이 스킬을 사용할 것. 가중평균 등급 계산, 등급-숫자 매핑, 커버리지 기반 등급 보류 판정, 점수 계산과 설명 생성의 분리가 필요한 모든 스코어링 작업에서 트리거."
+description: "Grading standards for the ETF analysis harness. Use this skill for every grade computed (A+ through D) — sector scores, theme structure, financial condition, valuation. Triggers on any scoring task needing weighted-average grades, grade-to-number mapping, coverage-based grade suspension, sub-sector valuation bands, macro sign flips by sector, bottom-detection methodology, or separating score computation from explanation."
 ---
 
-# ETF 등급 산정 표준
+# Grading Standards
 
-모든 스코어링 에이전트가 따르는 등급 체계. 핵심 원칙: **점수는 규칙과 스크립트가 만들고, LLM은 그 결과를 설명한다.** LLM이 최종 등급을 직관으로 정하면 실행마다 결과가 흔들리고 근거 추적이 불가능해지기 때문이다.
+The grade system every scoring agent follows. Core principle: **rules and scripts produce the score; the model explains it.** When the model picks the final grade by intuition, results move between runs and the reasoning cannot be traced.
 
-## 등급 체계
+## Grade scale
 
-10단계: `A+ A0 A- B+ B0 B- C+ C0 C- D`. 숫자 매핑 A+=10 … D=1.
+Ten levels: `A+ A0 A- B+ B0 B- C+ C0 C- D`. Numeric mapping A+=10 … D=1.
 
-| 구간 | 의미 |
-|------|------|
-| A대 | 구조·데이터가 강하게 뒷받침됨 |
-| B대 | 양호하나 확인할 점 존재 |
-| C대 | 약점이 확인됨 또는 근거가 약함 |
-| D | 명확한 결함 |
+| Band | Meaning |
+|---|---|
+| A | Structure and data strongly support it |
+| B | Sound, with points to verify |
+| C | A weakness is confirmed, or the evidence is thin |
+| D | A clear defect |
 
-## 산정 절차 (모든 스코어러 공통)
+## Procedure (all scorers)
 
-1. **항목별 등급 부여** — 개별 항목(밸류체인/종목/기준)마다 아래 순서로:
-   - 확보한 데이터를 나열한다 (수치 + 출처 + 기준일)
-   - 해당 축의 루브릭(각 에이전트 정의에 명시)에 데이터를 대입해 등급을 정한다
-   - rationale에 어떤 데이터가 어떤 기준에 걸렸는지 1-2문장으로 기록한다
-   - 데이터가 없으면 등급을 `null`로 두고 missing에 기록한다. **추정 금지.**
-2. **가중평균 계산** — 항목별 `{name, weight, grade}` 배열을 만들어 반드시 스크립트로 계산한다:
+1. **Grade each item** — for every item (value chain / holding / criterion), in this order:
+   - List the data obtained (figure + source + as-of date)
+   - Apply the axis rubric (defined in each agent) to that data to reach a grade
+   - Record in `rationale`, in one or two sentences, which datum tripped which criterion
+   - If there is no data, leave the grade `null` and record it in `missing`. **Never estimate.**
+2. **Compute the weighted average** — build an array of `{name, weight, grade}` and run the script:
    ```bash
-   echo '{"items":[{"name":"AI반도체","weight":35,"grade":"A-"}, ...]}' | python3 {이 스킬 디렉토리}/scripts/weighted_grade.py
+   echo '{"items":[{"name":"AI semis","weight":35,"grade":"A-"}, ...]}' | python3 {this skill directory}/scripts/weighted_grade.py
    ```
-   스크립트가 `final_grade`, `numeric`, `coverage_pct`, `contributions`를 반환한다. 암산·직관으로 최종 등급을 정하지 않는다.
-3. **커버리지 게이트** — `coverage_pct < 60`이면 최종 등급을 `null`로 하고 `"분석 제한 — 커버리지 부족"`을 명시한다. 60~80이면 등급은 내되 confidence를 `low`로 낮춘다.
-4. **설명 생성** — 스크립트 출력의 contributions를 인용해 설명을 쓴다. "비중이 큰 항목의 등급이 최종 등급에 더 크게 영향을 줍니다"라는 원리를 함께 서술한다.
+   It returns `final_grade`, `numeric`, `coverage_pct`, and `contributions`. Never settle a final grade by mental arithmetic or intuition.
+3. **Coverage gate** — if `coverage_pct < 60`, set the final grade to `null` and state `"Analysis limited — insufficient coverage"`. Between 60 and 80, grade it but drop confidence to `low`.
+4. **Write the explanation** — cite the script's `contributions`. Include the principle that higher-weight items move the final grade more.
 
-## 표현 규칙
+## Wording rules
 
-- 등급은 상태 서술이다. "B+이므로 유망하다" 같은 전망·추천 어휘로 번역하지 않는다.
-- 가격 적정성 C대는 "나쁘다"가 아니라 "현재 실적 대비 가격 부담이 확인된다"로 서술하고, 성장성 맥락을 병기한다.
-- 모든 최종 등급에는 기준일, 데이터 출처 수, coverage_pct, confidence를 함께 표기한다.
+- A grade describes a state. Do not translate it into forecast or recommendation language ("B+, so it looks promising").
+- A C on the valuation axis is not "bad" — it is "a valuation premium is confirmed at current earnings", and it is stated alongside the growth context.
+- Every final grade carries its as-of date, source count, `coverage_pct`, and `confidence`.
 
-## 밸류에이션 — 서브섹터별 배수 밴드 (2026-09-04 추가)
+## Valuation — sub-sector multiple bands
 
-PER을 단일 기준(예: "IT는 20~40")으로 적용하면 오판한다. **같은 반도체 안에서도 서브섹터별 정상 배수가 다르다.**
+Applying one P/E rule ("tech is 20–40×") misprices half the sector. **Normal multiples differ by sub-sector even within semiconductors.**
 
-| 서브섹터 | 정상 PER 밴드 | 예시 |
-|----------|--------------|------|
-| 팹리스 | 20~35x (선행) | NVDA·AMD·AVGO·MRVL |
-| 파운드리 | 15~25x | TSM |
-| 메모리 | 8~15x (through-cycle) | MU·SK하이닉스 |
-| 반도체 장비 | 25~50x | AMAT·LRCX |
-| 유틸리티·IPP | 15~30x | CEG·PEG |
+| Sub-sector | Normal P/E | Examples |
+|---|---|---|
+| Fabless | 20–35× (forward) | NVDA, AMD, AVGO, MRVL |
+| Foundry | 15–25× | TSM |
+| Memory | 8–15× (through-cycle) | MU, SK Hynix |
+| Semi equipment | 25–50× | AMAT, LRCX |
+| Utilities / IPP | 15–30× | CEG, PEG |
 
-**등급 부여**: 밴드 하단 이탈 → A대 / 밴드 내 → B대 / 1~2배 초과 → C대 / 2배 초과·적자 → D
+**Grading**: below the band → A range / inside the band → B range / 1–2× above → C range / more than 2× above, or lossmaking → D
 
-### 사이클주는 PER을 쓰지 않는다
-원자재 채굴주(우라늄·리튬·비철)는 **이익 피크에서 PER이 가장 낮게** 나온다. 낮은 PER이 저평가가 아니라 사이클 고점 신호일 수 있다.
-- 사례: SQM 영업이익률 48.9%(사이클 고점권 마진)에서 선행 PER 8.6배. 리튬가가 꺾이면 성립하지 않음
-- **대응**: 채굴주는 PER 대신 **PBR·EV/EBITDA·원가 곡선 위치**로 판정하고, PER 항목은 중립 처리한다
+### Cyclicals do not get a P/E
+Commodity miners (uranium, lithium, base metals) print their **lowest P/E at the earnings peak**. A low multiple may be a cycle-top signal, not a cheap stock.
+- Case: SQM at a 48.9% operating margin (cycle-peak margin) with a forward P/E of 8.6×. That does not hold once lithium prices roll over
+- **Instead**: judge miners on **P/B, EV/EBITDA, and cost-curve position**, and mark the P/E item neutral
 
-## 매크로 요소는 섹터마다 부호가 반대다 (2026-09-04 추가)
+## Macro flips sign by sector
 
-**같은 사건이 섹터마다 다른 방향으로 작용한다.** 매크로 등급을 섹터에 그대로 복사하면 안 된다.
+**The same event pushes different sectors in opposite directions.** Never copy a macro grade across sectors.
 
-| 사건 | 반도체 | 원자력·전력 | 리튬·EV | 이유 |
-|------|--------|------------|---------|------|
-| 유가 상승 | **부정** | **긍정** | **긍정** | 반도체는 유가→인플레→금리→고배수 할인(간접). 원자력은 대체에너지 수요, EV는 내연차 대비 경제성 |
-| 금리 상승 | 부정 | 부정(유틸 특히) | 부정 | 듀레이션·자본집약도에 비례 |
+| Event | Semiconductors | Nuclear / power | Lithium / EV | Why |
+|---|---|---|---|---|
+| Oil up | **Negative** | **Positive** | **Positive** | For semis the path is oil → inflation → rates → discount on high multiples (indirect). For nuclear it is alternative-energy demand; for EVs, economics versus combustion |
+| Rates up | Negative | Negative (utilities especially) | Negative | In proportion to duration and capital intensity |
 
-- 금리 민감도도 하위 업종별로 차등한다: 유틸(배당·자본집약) > IPP > 채굴주(성장 성격)
-- **유가가 반도체 원가에 미치는 직접 영향은 작다.** 경로는 원가가 아니라 금리다. 그래서 유가만 보지 말고 10년물·인상확률까지 함께 봐야 사슬이 완성된다
+- Rate sensitivity also differs within a sector: utilities (dividend, capital-intensive) > IPP > miners (growth-like).
+- **Oil's direct effect on semiconductor input costs is small.** The channel is rates, not costs. So do not look at oil alone — carry the 10-year and the hike probability to complete the chain.
 
-## 바닥 판정 — 기관 표준 방법론 (2026-09-04 추가)
+## Bottom detection — institutional methodology
 
-"저점 대비 거리"만으로 바닥을 판정하면 **하락 추세에서 falling knife에 만점을 준다**(저점이 계속 갱신되므로). 아래 2층으로 나눈다.
+Judging a bottom by "distance above the low" alone **gives a falling knife full marks in a downtrend**, because the low keeps being reset. Split it in two layers.
 
-### 단기 바닥 — Follow-Through Day (O'Neil/IBD)
-1. **Rally attempt**: 최근 저점일이 Day 1. 신저가 갱신 시 카운트 리셋
-2. **FTD 조건**: Day 4 이후 종가 **+1.25% 이상**(강한 신호는 1.5~2%) & **거래량 전일 초과**
-3. **Day 4~7이 최적**. Day 10 이후 FTD는 통계적 성공률이 낮다
-4. **무효화**: rally attempt 저점 하회 시 FTD 무효
-5. **실패율 약 20%**(O'Neil 본인 인정). 참여 폭이 좁으면 실패 확률 상승
+### Short-term bottom — the Follow-Through Day (O'Neil/IBD)
+1. **Rally attempt**: the most recent low is Day 1. A new low resets the count
+2. **FTD condition**: from Day 4 onward, a close **+1.25% or better** (strong signals run 1.5–2%) **on higher volume than the prior day**
+3. **Day 4–7 is optimal.** FTDs after Day 10 have a statistically weaker record
+4. **Invalidation**: undercutting the rally-attempt low voids the FTD
+5. **About a 20% failure rate** (O'Neil's own figure). Narrow participation raises it
 
-**짝 지표 — 분산일(Distribution Day)**: 종가 **-0.2% 이상 하락 + 거래량 전일 초과** = 기관 매도 흔적. 25거래일 창에서 **4~5개 경고, 6개 이상 조정 국면**
+**Its pair — the distribution day**: a close **−0.2% or worse on higher volume** is a footprint of institutional selling. In a 25-session window, **4–5 is a warning, 6 or more is a correction.**
 
-### 구조적 바닥 — 3개 독립 신호군
-기관 자료 기준 "단일 지표로 사이클 바닥을 부를 수 없다. 최소 3개 독립 신호군의 확인이 필요하다."
-- 레인지 위치(600거래일 기준) · 200일선 이격 · 서브섹터 밸류 밴드
-- 각각 5단계로 채점 후 평균
+### Structural bottom — three independent signal groups
+Per institutional practice: no single indicator can call a cycle bottom; at least three independent signal groups must confirm.
+- Range position (600-session basis) · distance from the 200-day · sub-sector valuation band
+- Score each on five levels, then average
 
-### 눌림 vs 꺾임 — 피보나치 되돌림 (검증됨)
-SQM 1,254일·되돌림 35건으로 검증한 결과:
-| 되돌림 비율 | 표본 | 이전 고점 회복률 |
-|------------|------|-----------------|
-| 38.2~61.8% | 6 | **100%** |
+### Pullback or break — the Fibonacci retracement (validated)
+Validated on SQM over 1,254 sessions and 35 retracements:
+
+| Retracement | Sample | Recovered the prior high |
+|---|---|---|
+| 38.2–61.8% | 6 | **100%** |
 | <38.2% | 1 | 100% |
 | **≥61.8%** | 28 | **36%** |
-- **61.8%가 결정적 분기점**(100% vs 36%)
-- 200일선 유지 62% vs 이탈 41% — 약하게 유효
-- **거래량 기준(하락에 거래량 실리면 반전)은 판별력 없음(43% vs 50%)** — 교과서와 다름. 사용하지 않는다
-- 한계: 단일 종목 35건, 61.8% 미만 구간 표본 7건. 다종목 확대 검증 필요
 
-### 지지 방어 인정 조건
-"장중 이탈 후 종가 회복"만으로 지지 방어로 보면 안 된다. **재테스트 저점이 절상**되어야 방어로 인정한다. 저점이 계속 낮아지면 방어가 아니라 **완만한 이탈 진행**이다.
-- 사례: SOXX 저점 498.93 → 495.09 → 493.31 → 489.21(4연속 절하), 방어 거래량 -28%. 종가는 매번 회복했으나 지지는 약화 중이었다
+- **61.8% is the decisive divider** (100% vs 36%)
+- Holding the 200-day: 62% vs 41% when lost — weakly useful
+- **The volume criterion (a reversal when volume comes in on the decline) has no discriminating power (43% vs 50%)** — contrary to the textbook. Not used
+- Limits: one ticker, 35 events, and only 7 samples below 61.8%. Needs validation across more names
+
+### What counts as support being defended
+"Broke intraday, closed back above" is not enough. **The retest low must be higher** for it to count as a defence. If the lows keep falling, that is not a defence — it is a slow break in progress.
+- Case: SOXX lows of 498.93 → 495.09 → 493.31 → 489.21 (four consecutive lower lows) on 28% lighter defending volume. It closed back above every time, and support was weakening throughout

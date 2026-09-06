@@ -1,121 +1,141 @@
 ---
 name: etf-signal-scoring
-description: "단일 종목·ETF의 현재 신호를 7개 지표 × 3개 시간축으로 채점하는 표준. 특정 티커의 '지금 어떤 상태인가', 일일/주간 판단문 작성, 보유 포지션 점검, 두 종목 비교, 레버리지 ETF 단기 판단, 구성종목 히트맵 채점, 차트 패턴의 통계적 검증이 필요할 때 반드시 이 스킬을 사용할 것. 발굴 파이프라인(섹터→테마→ETF)은 etf-discovery-orchestrator를 쓰고, 이 스킬은 '대상이 이미 정해진' 채점에 쓴다."
+description: "Standard for scoring one already-chosen stock or ETF across 7 indicators × 3 time horizons. Use this skill when asked what state a specific ticker is in right now, to write a daily or weekly judgment, to check an open position, to compare two tickers, to judge a leveraged ETF over days, to score constituents for a heatmap, or to validate a chart pattern statistically. The discovery pipeline (sector → theme → ETF) belongs to etf-discovery-orchestrator; this skill is for when the target is already decided."
 ---
 
-# 신호 채점 표준 (7지표 × 3시간축)
+# Signal Scoring (7 indicators × 3 horizons)
 
-발굴 하네스가 "무엇을 볼까"를 답한다면, 이 스킬은 **"이미 정해진 대상이 지금 어떤 상태인가"**를 답한다. 일일 판단문, 보유 점검, 종목 비교가 전부 여기에 속한다.
+The discovery harness answers *what should I look at*. This skill answers **what state is this already-chosen target in**. Daily judgments, position checks, and head-to-head comparisons all live here.
 
-**절대 원칙**: 점수는 스크립트가 만들고 LLM은 해석만 한다. 지표를 눈으로 보고 종합 점수를 직관으로 부르지 않는다.
+**Absolute rule**: the script produces the score, the model only interprets it. Never eyeball the indicators and call a total.
 
 ```bash
 python3 tools/score.py SOXX --horizon swing --holdings
 python3 tools/score.py LIT  --horizon long --sub-sector miner --benchmark SPY
 ```
 
-## 7개 지표
+## The seven indicators
 
-모든 시간축이 **같은 7개**를 쓴다. 시간축마다 바뀌는 것은 가중치와 측정 창뿐이다. 지표 집합을 고정해야 두 시간축을 나란히 놓고 "어느 지표 때문에 서로 다른 결론이 나왔는지" 지목할 수 있다.
+Every horizon uses the **same seven**. Only the weights and measurement windows change. Fixing the set is what lets you put two horizons side by side and point at the indicator that made them disagree.
 
-| 지표 | 무엇을 보는가 | 주 데이터 |
-|------|--------------|----------|
-| 매크로 | 금리·유가·정책이 이 섹터에 주는 방향 | 10년물, FF선물 확률, 유가 |
-| 밸류에이션 | 서브섹터 밴드 대비 배수 위치 | PER/PBR/EV-EBITDA |
-| 추세 | 20선 vs 60선, 종가의 이평 대비 위치 | 일봉 |
-| 모멘텀 | 20일 수익률 **+ 거래량 동반 여부** | 일봉 |
-| 위치·바닥 | 60일(단기)·전체(장기) 레인지 내 위치, 200선 이격 | 일봉 |
-| 상대강도 | 벤치마크 대비 20일 초과수익 | 일봉 |
-| 수급 | 거래량 추세, 투자자별 매매(국내), 풋/콜 | 토스 API / AlphaQuery |
+| Indicator | What it measures | Primary data |
+|---|---|---|
+| Macro | Which way rates, oil, and policy push *this sector* | 10-year, fed-funds futures probability, oil |
+| Valuation | Multiple against the sub-sector band | P/E, P/B, EV/EBITDA |
+| Trend | 20-day vs 60-day, close against the averages | Daily bars |
+| Momentum | 20-day return **and whether volume confirms it** | Daily bars |
+| Position / bottom | Position in the 60-day (short) or full (long) range, distance from the 200-day | Daily bars |
+| Relative strength | 20-day excess return vs the benchmark | Daily bars |
+| Flows | Volume trend, investor-type net buying (KR), put/call | Toss API / AlphaQuery |
 
-### 지표별 주의사항
+### Notes that are not obvious
 
-- **모멘텀은 방향과 참여를 함께 본다.** 하락하는데 거래량이 실리면 분산(distribution)이므로 0점이다. 방향만 보면 조용한 하락과 투매를 구분하지 못한다.
-- **위치·바닥에 "저점 대비 거리"만 쓰면 하락 추세에서 falling knife에 만점을 준다.** 저점이 매일 갱신되기 때문이다. 레인지 위치 + 200선 이격을 함께 쓴다.
-- **매크로는 섹터마다 부호가 반대다.** 유가 상승은 반도체에 부정(금리 경로), 원자력·리튬에 긍정이다. 등급을 섹터 간 복사하지 않는다. 상세 표는 `etf-grading-standards`.
-- **밸류에이션은 서브섹터 밴드로 판정하고, 채굴주는 PER을 쓰지 않는다.** 사이클주는 이익 피크에서 PER이 가장 낮게 나온다.
-### 매크로 점수 매기는 법 (중장기 가중치 40% — 여기서 갈린다)
+- **Momentum needs direction and participation.** Falling on rising volume is distribution, so it scores zero. Direction alone cannot separate a quiet drift from a liquidation.
+- **Position cannot be "distance above the low".** In a downtrend the low resets daily, which gives a falling knife full marks. Use range position plus distance from the 200-day.
+- **Macro flips sign by sector.** Rising oil is negative for semiconductors (via rates) and positive for nuclear and lithium. Never copy a grade across sectors — see the table in `etf-grading-standards`.
+- **Valuation uses sub-sector bands, and miners get no P/E at all.** Cyclicals print their lowest multiple at the earnings peak.
 
-`tools/score.py`의 `--macro`는 유일하게 사람이 넣는 값이다. 기본값 50(중립)을 그대로 두면 중장기 점수의 40%가 무의미해지므로 **반드시 아래 절차로 채운다.**
+### Scoring macro (40% of the long horizon — this is where runs diverge)
 
-1. 해당 섹터의 지배적 매크로 변수 하나를 고른다 (반도체·성장주 = 미 10년물, 유틸·원자력 = 금리 + 전력수요, 리튬·EV = 금리 + 원자재 가격, 방산 = 재정지출).
-2. 그 변수의 **방향**을 확인한다 — 수치와 기준일을 함께 기록한다.
-3. `etf-grading-standards`의 부호 반전표로 해당 섹터에 유리/불리를 판정한다.
-4. 아래 밴드로 환산한다.
+`--macro` in `tools/score.py` is the one value a human supplies. Leaving the default of 50 (neutral) makes 40% of the long-horizon score meaningless, so **always fill it using this procedure:**
 
-| 점수 | 조건 |
-|------|------|
-| 100 | 지배 변수가 명확히 유리한 방향 + 정책·이벤트도 같은 방향 |
-| 75 | 유리한 방향이나 확인 근거가 하나뿐 |
-| 50 | 방향이 섞였거나 판단 근거 부족 — **모르면 여기** |
-| 25 | 불리한 방향, 다만 강도가 약함 |
-| 0 | 명확히 불리 + 가까운 이벤트(FOMC·CPI·고용)가 추가 악화 가능 |
+1. Pick the one dominant macro variable for the sector (semis and growth = US 10-year; utilities and nuclear = rates plus power demand; lithium and EV = rates plus commodity prices; defence = fiscal spending).
+2. Establish its **direction**, recording the figure and its as-of date.
+3. Use the sign-flip table in `etf-grading-standards` to judge favourable or unfavourable for this sector.
+4. Convert with the band below.
 
-**근거를 못 찾았으면 50을 쓰고 "매크로 미판정"을 판단문에 명시한다.** 조용히 50을 넣고 판정한 것처럼 쓰지 않는다.
+| Score | Condition |
+|---|---|
+| 100 | Dominant variable clearly favourable, and policy/events point the same way |
+| 75 | Favourable direction, but only one supporting source |
+| 50 | Mixed, or insufficient basis — **use this when you don't know** |
+| 25 | Unfavourable, but weakly |
+| 0 | Clearly unfavourable, with a near-term event (FOMC, CPI, payrolls) that could worsen it |
 
-- **수급 지표는 현재 거래량 추세만 본다.** `tools/score.py`의 flow는 20일 거래량 / 직전 40일 거래량이라 약한 프록시다. 풋/콜·투자자별 순매수를 구했으면 판단문에는 그 수치를 쓰고, 점수는 프록시 기준임을 밝힌다.
-- **수급은 대체 가능하면 비워둔다.** 국내 반도체 수급처럼 주주환원 등 다른 요인이 지배하는 구간에서는 지표를 억지로 채우지 말고 결측 처리한다.
+**If you could not establish a basis, use 50 and say "macro not assessed" in the judgment.** Never quietly pass 50 and write as though it had been assessed.
 
-## 3개 시간축과 가중치
+- **The flow indicator only looks at the volume trend.** In `tools/score.py` it is 20-day volume over the prior 40-day volume — a weak proxy. If you obtained put/call or investor-type flow, quote those figures in the judgment and note that the score itself rests on the proxy.
+- **Leave an indicator empty rather than filling it with the wrong thing.** Korean semiconductor flows were dropped during a period when shareholder-return programmes, not sector conviction, drove the numbers. A missing indicator is honest; a misleading one is not.
 
-| 지표 | 중장기 | 1개월(기본) | 단기 3~10일 |
-|------|-------|------------|------------|
-| 매크로 | 40 | 10 | 5 |
-| 밸류에이션 | 15 | 5 | 0 |
-| 추세 | 15 | 25 | 25 |
-| 모멘텀 | 5 | 20 | 25 |
-| 위치·바닥 | 15 | 20 | 20 |
-| 상대강도 | 5 | 15 | 15 |
-| 수급 | 5 | 5 | 10 |
+## Three horizons and their weights
 
-- **중장기는 매크로 40%**다. 금리가 방향을 정하고 차트는 진입 시점만 정하기 때문이다.
-- **단기는 밸류에이션 0%**다. 3~10일 안에 배수는 움직이지 않는다.
-- **대상이 레버리지(SOXL/SOXS/LITP 등)면 단기가 주(主)**, 중장기는 참고로 병기한다.
+| Indicator | `long` | `swing` (default) | `short` (3–10 sessions) |
+|---|---:|---:|---:|
+| Macro | 40 | 10 | 5 |
+| Valuation | 15 | 5 | 0 |
+| Trend | 15 | 25 | 25 |
+| Momentum | 5 | 20 | 25 |
+| Position / bottom | 15 | 20 | 20 |
+| Relative strength | 5 | 15 | 15 |
+| Flows | 5 | 5 | 10 |
 
-### 시간축이 반대로 갈 수 있다 — 그게 정상이다
-같은 2일 랠리에서 1개월 점수 +7.5, 중장기 점수 -3.6이 동시에 나온 사례가 있다. 랠리가 위치·바닥 점수를 깎으면서(싼 자리에서 멀어짐) 추세 점수를 올렸기 때문이다. **두 축이 갈릴 때는 "어느 지표가 갈랐는지"를 지목해서 서술한다.** 종합 점수만 비교하면 정보가 사라진다.
+- **Long is 40% macro** because rates set the direction and the chart only sets the entry.
+- **Short is 0% valuation** because multiples do not move in a week.
+- **If the target is leveraged (SOXL/SOXS/LITP and the like), short is the primary horizon** and long is quoted alongside as context.
 
-## 5단계 신호 (국내 관행: 빨강이 긍정)
+### Horizons disagreeing is normal
+The same two-day rally once scored +7.5 on the one-month profile and −3.6 on the long-term profile: the rally raised the trend score while destroying the position score (further from a cheap entry). **When the axes split, name the indicator that split them.** Comparing only the totals throws the information away.
 
-`🔴 80+ / 🟠 60-80 / 🟡 40-60 / 🟢 20-40 / 🔵 0-20`
+## Five signal levels (Korean market convention: red is positive)
 
-점수는 **예상 수익률이 아니라 조건 충족도**다. "80점이니 8% 먹는다"로 번역하면 안 된다.
+`🔴 80+ / 🟠 60–80 / 🟡 40–60 / 🟢 20–40 / 🔵 0–20`
 
-## ETF 점수 = 구성종목 점수의 가중합
+The score measures **how many conditions are met, not an expected return.** Never translate "80 points" into "8% upside".
 
-ETF를 하나의 차트로만 채점하면 지수가 버티는 동안 내부가 무너지는 국면을 놓친다. `--holdings`로 상위 구성종목을 같이 채점하고 **폭(breadth)**을 함께 보고한다: 상위 10종목 중 몇 개가 20선>60선인가. 8종목 중 6개가 하락 추세면 지수 반등은 반등이 아니라 되돌림일 가능성이 높다.
+## An ETF's score is the weighted sum of its constituents
 
-한국 ETF는 FMP `etf/holdings`가 빈 배열을 반환한다. 운용사 공식 PDF/페이지에서 직접 수집한다.
+Scoring an ETF from its own chart alone hides the case where the index holds while its internals fall apart. Use `--holdings` to score the top constituents and report **breadth**: how many of the top ten sit with the 20-day above the 60-day. Six of eight largest holdings in a downtrend means an index bounce is more likely a retracement than a bottom.
 
-## 패턴은 주장하기 전에 검증한다
+Korean ETF holdings return an empty array from FMP `etf/holdings`. Collect them from the issuer's official page.
 
-**이 저장소의 규칙: 백테스트를 통과하지 못한 패턴은 판단문에 쓰지 않는다.**
+## Validate a pattern before asserting it
+
+**Repository rule: a pattern that has not passed a backtest does not go into a judgment.**
 
 ```bash
 python3 tools/validate.py SOXX --pattern ftd --horizon 10
 ```
 
-출력은 항상 세 줄이다 — 패턴 발생 시 성과, 아무 날이나 잡았을 때 성과(baseline), 그 차이. baseline을 못 이기면 그 패턴은 노이즈다.
+The output always shows three things — the pattern's forward return, the return of picking any random day (baseline), and the difference. If it does not beat baseline, it is noise.
 
-실제로 폐기된 사례:
-- "갭하락 후 고가 근처 종가 = 기관 매집" — 1,255일·44건 검증 결과 baseline보다 **나빴다**. 폐기.
-- "하락에 거래량이 실리면 반전" — 판별력 없음(43% vs 50%). 사용하지 않는다.
-- SOXX의 Follow-Through Day는 1,255일에서 baseline 대비 **-2.47%p**로 오히려 역신호였다. 교과서 패턴도 대상별로 재검증한다.
+Actually dropped:
+- *"Gap down closing near the high = institutional accumulation"* — 1,255 sessions, 44 events, **worse than baseline**. Dropped.
+- *"Volume on the decline signals a reversal"* — no discriminating power (43% vs 50%). Not used.
+- *SOXX's Follow-Through Day* was **−2.47pp against baseline** over 1,255 sessions — an inverted signal. Even textbook patterns are re-validated per target.
 
-살아남은 사례:
-- 피보나치 61.8% 되돌림 — 이전 고점 회복률 100%(미만) vs 36%(이상). 결정적 분기점.
+Survived:
+- *The 61.8% Fibonacci retracement* — 100% recovery of the prior high below the line, 36% above it. A decisive divider.
 
-## 흔한 오류 3가지
+## Three common errors
 
-1. **장중 데이터를 종가 통계와 비교하지 않는다.** 개장 1.6시간 시점의 누적 거래량을 20일 평균과 비교해 "거래량 0.58배"라고 판단한 적이 있다. 경과 시간으로 정규화하면 실제로는 1.5~1.8배였고 결론이 뒤집혔다.
-2. **지지 방어는 종가 회복이 아니라 저점 절상으로 판정한다.** 저점이 498.93 → 495.09 → 493.31 → 489.21로 내려가는 동안 종가는 매번 회복했지만 지지는 무너지는 중이었다.
-3. **점수 밖의 판단을 몰래 섞지 않는다.** 종합 점수 1위가 아닌 종목을 "실질적으로 더 낫다"고 쓰려면, 어떤 근거를 점수 밖에서 추가했는지 명시하거나 그 근거를 지표로 편입해야 한다.
+1. **Never compare intraday data to a close-based statistic.** Cumulative volume 1.6 hours into a session was once read against a 20-day average as "0.58× — volume is drying up". Normalised for elapsed time it was 1.5–1.8×, and the conclusion inverted.
+2. **Support is defended by a higher low, not by a close back above the level.** Lows of 498.93 → 495.09 → 493.31 → 489.21 closed back above the level every time while support was breaking down.
+3. **Do not smuggle in judgment from outside the score.** To argue the second-ranked name is actually better, either say explicitly what you added outside the score, or fold that basis in as an indicator.
 
-## 판단문 출력 포맷 (고정)
+## Judgment output format (fixed)
 
-**이 포맷은 고정이다.** 임의로 항목을 합치거나 빼지 않는다. 여러 종목을 요청받으면 종목마다 이 블록을 따로 출력한다.
+**This format is fixed.** Do not merge or drop lines. Asked about several tickers, emit this block separately for each.
 
-채팅에 그대로 붙여넣을 수 있어야 하므로 **마크다운 표·헤더·인용부호(>)를 쓰지 않는다** — 메신저에서 표가 깨진다. 평문 + 줄바꿈만 사용한다.
+It has to paste into a chat client, so **no markdown tables, headers, or blockquotes** — they break in messengers. Plain text and line breaks only.
+
+```
+{TICKER} {holding/entry} call | {date} ({market} {weekday} close)
+
+Volume:      {multiple of the 20-day average} — reading
+Flows:       {put/call, investor-type net buying, ETF creations} — reading
+Chart:       {% from the 60-day high and low, support and resistance} — reading
+Holdings:    {top 8 by 60-day position and trend (20>60), count} — does "most constituents are near a bottom" hold?
+Events:      {today's and this week's catalysts, plus any pattern validated with historical numbers}
+Valuation:   {top holdings' P/E and EV/EBITDA against the sub-sector band} — cheap or rich
+External:    {rates, FX, policy}
+Constituents: 🔴 {strong} / 🟡 {watch} / 🔵 {weak}
+
+Structural reason: {2–3 sentences on why it is in this state, from industry structure — not from the scores}
+
+Conclusion: {2–3 conversational sentences. The call, the stop and target levels (on the underlying index), and a plain statement of what would prove it wrong}
+```
+
+For a Korean request, use the Korean field labels — this is the established wording, not a fresh translation:
 
 ```
 {티커} {보유/진입} 판단 | {날짜} ({시장} {요일} 종가 기준)
@@ -134,13 +154,13 @@ python3 tools/validate.py SOXX --pattern ftd --horizon 10
 결론: {구어체 2~3문장. 판단 + 손익절 레벨(기초 지수 기준) + "틀리면 자른다"는 솔직한 표현}
 ```
 
-규칙:
-- 각 줄은 `지표명: 수치 — 해석` 구조. **수치가 먼저, 해석이 뒤.** 느낌·감 표현 금지.
-- **결론만 구어체**로 쓴다. 나머지 지표 줄은 압축된 문어체를 유지한다.
-- **구성종목 줄을 생략하지 않는다.** ETF 판단에서 구성종목은 선택 항목이 아니다.
-- **구조적 이유를 생략하지 않는다.** 점수만 나열하면 왜 그런지가 빠진다.
-- 기본은 중장기 점수. **대상이 레버리지면 단기가 주(主)**이고 중장기를 참고로 병기한다. 판단문에 어느 쪽이 주인지 명시한다.
-- **손절·익절 레벨과 방향 표기는 전부 기초 지수 기준**이다. 레버리지 ETF는 음의 복리로 경로 의존이라 같은 지수 레벨에서도 가격이 매번 다르다 — SOXL/SOXS는 주문 수단일 뿐이고 자는 SOXX다. 인버스 포지션에서는 "하방"이 유리인지 불리인지 헷갈리므로 `(SOXS엔 유리/불리)`를 괄호로 덧붙인다.
-- 데이터를 못 구한 항목은 지어내지 말고 "미확보"로 적는다.
+Rules:
+- Each line reads `label: figure — reading`. **Figure first, interpretation second.** No impressions, no feel.
+- **Only the conclusion is conversational.** The indicator lines stay compressed and declarative.
+- **Never drop the constituents line.** For an ETF, holdings are not an optional extra.
+- **Never drop the structural reason.** Listing scores without it leaves out why.
+- Long is the default. **If the target is leveraged, short is primary** with long quoted alongside. State in the judgment which one is primary.
+- **Stop/target levels and all directional wording are quoted on the underlying index.** Leveraged ETFs are path-dependent through negative compounding, so the same index level maps to a different price every time — SOXL/SOXS are the order-entry instrument, SOXX is the ruler. On an inverse position, "downside" is ambiguous, so append "(favourable/unfavourable for SOXS)".
+- Anything you could not obtain is written as "not obtained". Never invented.
 
-금지 표현은 `etf-compliance-rules`를 따른다. 발굴 파이프라인의 리포트 5종 포맷은 `etf-report-templates`가 따로 정의한다.
+Banned language: see `etf-compliance-rules`. The five report formats for the discovery pipeline are defined separately in `etf-report-templates`.

@@ -19,5 +19,7 @@ Open the HTML file directly in a browser — it is self-contained.
 The full run also writes `analysis.json` (1.5 MB, every intermediate grade with its
 sources) and the `_workspace/` audit trail. Both are omitted here for size.
 
-Reports are in Korean, matching the agent prompts. See the repository
-[README](../README.md) for why.
+**These reports are in Korean.** They come from a run made before the harness was
+translated, when the agent prompts were Korean. The harness on `main` is English now and
+a fresh run produces English reports — this snapshot is kept because it is a real result,
+not a reconstruction. The Korean harness lives on the `ko` branch.

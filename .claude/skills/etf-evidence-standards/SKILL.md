@@ -1,53 +1,56 @@
 ---
 name: etf-evidence-standards
-description: "ETF/테마/시장 분석에서 데이터와 근거를 수집·기록할 때의 표준. 시장 지표, 테마 근거(evidence pack), ETF 데이터, 재무·가격 데이터를 웹에서 수집하는 모든 작업에서 반드시 이 스킬을 사용할 것. 출처 표기, 기준일 표기, 소스 우선순위/신뢰도 티어 판정, 출처 충돌 처리, 데이터 부족 처리가 필요하면 트리거."
+description: "Standards for collecting and recording data and evidence in ETF, theme, and market analysis. Use this skill for any task that gathers market indicators, theme evidence packs, ETF data, or financial and price data from the web. Triggers on: citing sources, recording as-of dates, judging source priority and reliability tier, handling conflicting sources, and handling missing data."
 ---
 
-# ETF 근거 수집 표준
+# Evidence Standards
 
-수집한 데이터가 최종 판단의 근거가 되므로, 모든 데이터는 출처·기준일·신뢰도 티어가 붙어야만 사용할 수 있다. 이 표준을 지키지 않은 데이터는 하류 스코어러가 사용하지 못하고 버려진다.
+Collected data becomes the basis of a final verdict, so nothing is usable until it carries a source, an as-of date, and a reliability tier. Data that does not meet this standard is discarded by downstream scorers rather than used.
 
-## 체크리스트 우선 원칙
+## Write the checklist first
 
-데이터를 찾기 전에 "이 대상에서 무엇을 확인해야 하는가"를 먼저 질문 목록(checklist)으로 작성한다. 그다음 각 질문에 대한 데이터를 찾는다. 이유: 찾은 것만 나열하면 확증 편향이 생기고, 못 찾은 항목(missing)이 무엇인지 드러나지 않는다.
+Before looking for data, write down what needs to be established about this target as a list of questions. Then find data for each question.
 
-## 긍정·부정 양방향 의무
+Listing only what you happened to find produces confirmation bias and hides what is missing. The checklist makes the gaps visible.
 
-- 긍정 근거와 부정 근거를 반드시 함께 찾는다. **부정 근거가 0건인 evidence pack은 미완성이다.**
-- 부정 근거를 찾지 못했으면 "부정 근거 없음(=리스크 없음)"이 아니라 **"검증 불충분"**으로 표시한다 — 못 찾은 것과 없는 것은 다르다.
-- "리스크가 없는 테마", "좋은 테마"로 단정하는 서술을 쓰지 않는다. 예: "AI 반도체는 수요가 강하고 성장이 기대됩니다"(잘못) → "AI 반도체는 GPU·HBM 수요 증가와 공급 병목이 확인되지만, 상위 기업 가격 부담과 수출 규제 리스크는 함께 확인해야 합니다"(올바름).
+## Both directions are mandatory
 
-## 소스 우선순위와 신뢰도 티어
+- Look for positive and negative evidence together. **An evidence pack with zero negative findings is incomplete.**
+- If you could not find negatives, mark it **"insufficiently verified"** — not "no negatives found, therefore no risk". Not finding something and it not existing are different claims.
+- Never assert that a theme is "risk-free" or simply "good". For example: "AI semiconductors have strong demand and promising growth" is wrong; "AI semiconductors show rising GPU/HBM demand and supply bottlenecks, but the valuation premium on the largest names and export-control risk have to be checked alongside" is right.
 
-출처는 4개 티어로 분류한다:
+## Source priority and reliability tiers
 
-| tier | 정의 | 등급 산정 사용 |
-|------|------|---------------|
-| primary | 공식 통계·중앙은행·거래소·공시·운용사 공식 자료 | 가능 |
-| secondary | 주요 언론·증권사 리서치·신뢰 가능한 데이터 벤더(Morningstar, ETF.com 등) | 가능 |
-| tertiary | 일반 금융 포털·뉴스 — 이벤트·보조 근거로만 | 단독 사용 불가 |
-| unsupported | 블로그·커뮤니티·출처 불명 | **사용 금지** |
+Four tiers:
 
-데이터 영역별(ETF 기본정보/보유종목/재무/가격/테마) 우선 출처 목록과 **소스 충돌 처리 6원칙**은 `references/source-priority.md`를 읽고 따른다. 데이터 수집을 시작하기 전에 담당 영역의 표를 확인하라.
+| Tier | Definition | Usable for grading |
+|---|---|---|
+| primary | Official statistics, central banks, exchanges, regulatory filings, issuer materials | Yes |
+| secondary | Major press, broker research, reputable data vendors (Morningstar, ETF.com, FMP) | Yes |
+| tertiary | General finance portals and news — for events and supporting context only | Not on its own |
+| unsupported | Blogs, forums, unattributed | **Never** |
 
-- 하나의 주장(claim)에 출처가 하나뿐이고 secondary 이하이면 confidence를 낮춘다.
-- 단일 tertiary(뉴스)만으로 테마 구조 등급을 만들지 않는다.
-- 수치가 출처 간 충돌하면 삭제하지 말고 둘 다 기록하며 봉투의 `source_conflicts`에 남긴다.
+Per-domain source rankings (ETF basics / holdings / financials / prices / themes) and the **six rules for handling source conflicts** are in `references/source-priority.md`. Read the table for your domain before you start collecting.
 
-## 기록 형식
+- A claim resting on a single secondary-or-lower source gets reduced confidence.
+- Never build a theme-structure grade from a single tertiary source (news).
+- When figures conflict across sources, do not delete either — record both and log it in the envelope's `source_conflicts`.
 
-모든 산출물은 데이터 계약(`.claude/skills/etf-discovery-orchestrator/references/data-contracts.md`)의 공통 봉투를 따른다. sources 항목은 8개 필드(source_name, source_type, url_or_reference, as_of_date, retrieved_at, reliability_tier, used_for, notes)를 채운다. 개별 evidence 항목:
+## Recording format
+
+Every output follows the common envelope in the data contract (`.claude/skills/etf-discovery-orchestrator/references/data-contracts.md`). Each entry in `sources` fills eight fields: `source_name`, `source_type`, `url_or_reference`, `as_of_date`, `retrieved_at`, `reliability_tier`, `used_for`, `notes`. Individual evidence items:
 
 ```json
-{"claim": "확인된 사실 1문장", "data": "구체 수치", "direction": "positive|negative",
- "source_idx": 0, "as_of": "YYYY-MM-DD", "confidence": "high|medium|low"}
+{"claim": "one sentence of established fact", "data": "the specific figure",
+ "direction": "positive|negative", "source_idx": 0,
+ "as_of": "YYYY-MM-DD", "confidence": "high|medium|low"}
 ```
 
-- `as_of`는 데이터의 기준일이다. 기사 게재일이 아니라 데이터 자체의 시점을 쓴다. 불명확하면 접근일을 쓰고 confidence를 낮춘다.
-- `claim`은 검증 가능한 사실 서술만. "유망하다", "성장할 것이다" 같은 의견은 claim이 될 수 없다.
+- `as_of` is the date the *data* refers to, not the date the article was published. When it is unclear, use the access date and lower the confidence.
+- `claim` holds verifiable statements of fact only. "Promising" or "will grow" are opinions and cannot be claims.
 
-## 데이터 부족 처리
+## Missing data
 
-- 찾지 못한 항목은 `coverage.missing`에 기록하고, 그 부족이 판단에 주는 영향을 `impact_of_missing`에 1-2문장으로 쓴다.
-- 검색 2-3회로 확보되지 않으면 그 항목은 부족으로 확정하고 다음 항목으로 넘어간다. 무한 검색으로 시간을 태우지 않는다.
-- **어떤 경우에도 값을 추정해 채우지 않는다.** 근사치가 확인된 출처에 있으면 그 근사치를 출처와 함께 쓰는 것은 허용된다.
+- Record anything you could not find in `coverage.missing`, and write one or two sentences in `impact_of_missing` about what that gap does to the verdict.
+- If two or three searches do not turn it up, mark it missing and move on. Do not burn the run on an unbounded search.
+- **Never estimate a value to fill a gap.** Quoting an approximation that a source itself states, with attribution, is fine.

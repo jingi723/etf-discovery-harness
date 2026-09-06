@@ -191,10 +191,12 @@ client**, so a fresh token silently invalidates the one another process is holdi
 └── CLAUDE.md                           # trigger pointers and change log
 ```
 
-**The agent prompts are written in Korean.** They are the working prompts behind two
-months of live use, and translating them would mean shipping untested text. The
-documentation, the tools, and the code comments are English. Claude reads both fine;
-a translation PR is welcome (see [CONTRIBUTING.md](CONTRIBUTING.md)).
+**Two branches.** `main` is English — prompts, skills, docs, and tools. `ko` is the
+Korean working branch this was built and used in for two months, and it stays the
+day-to-day version; `main` is its published translation. Output follows the language you
+ask in, so an English request produces an English report on either branch.
+
+The sample run in `examples/` predates the translation and is in Korean.
 
 ## The discovery pipeline
 
@@ -256,7 +258,7 @@ guessing.
 ## Contributing
 
 Pattern contributions are especially welcome — but a new pattern needs a
-`tools/validate.py` run showing it beats baseline. See
+`tools/validate.py` run showing it beats baseline. Open PRs against `main`. See
 [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 
 ## Acknowledgements

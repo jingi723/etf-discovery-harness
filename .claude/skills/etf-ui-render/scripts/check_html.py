@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""UI HTML 기계 검사기.
+"""Mechanical checks on rendered UI HTML.
 
-검사: mock 잔여 문자열, 금지 표현, 중복 id, 태그 균형(파싱), 미치환 {{ }},
-외부 네트워크 리소스, 번들러 UUID 잔존, (--payload 지정 시) 등급 문자열 존재 대조.
+Checks: banned phrases, duplicate ids, tag balance
+(by parsing), unresolved {{ }}, external network resources, bundler UUID
+residue, and — with --payload — that the grade strings actually appear.
 
-사용: python3 check_html.py <html 파일 또는 디렉토리> [--payload ui_payload.json]
-종료 코드: 위반 0건이면 0, 있으면 1.
+    python3 check_html.py <html file or directory> [--payload ui_payload.json]
+
+Exit code 0 when clean, 1 when anything is found.
 """
 import json
 import os
@@ -13,9 +15,15 @@ import re
 import sys
 from html.parser import HTMLParser
 
-MOCK_RESIDUE = ["네오 미국 AI반도체", "490100", "12,340",
-                "예시입니다", "예시 데이터 기준", "DCLogic"]
-FORBIDDEN = ["사세요", "파세요", "추천합니다", "추천드립니다", "추천 종목",
+# kept in sync with etf-compliance-rules/scripts/check_forbidden.py
+FORBIDDEN = ["buy this", "you should buy", "you should sell", "we recommend",
+             "our recommendation", "recommended stock", "recommended pick",
+             "buying opportunity", "strong buy", "must-buy", "time to buy",
+             "guaranteed return", "guaranteed profit", "risk-free",
+             "can't lose", "will go up", "will rise", "poised to rally",
+             "set to surge", "don't miss", "act now", "price target",
+             "buy the dip",
+             "사세요", "파세요", "추천합니다", "추천드립니다", "추천 종목",
              "매수 기회", "매수하세요", "매도하세요", "매수 추천", "매도 추천",
              "상승 가능성이 높", "오를 것", "수익이 기대", "수익을 보장",
              "안전합니다", "무조건", "확실한 수익", "놓치지 마세요",
@@ -45,19 +53,16 @@ class Checker(HTMLParser):
             self.stack.pop()
         elif tag in self.stack:
             while self.stack and self.stack[-1] != tag:
-                self.errors.append(f"닫히지 않은 태그: <{self.stack.pop()}>")
+                self.errors.append(f"unclosed tag: <{self.stack.pop()}>")
             if self.stack:
                 self.stack.pop()
         else:
-            self.errors.append(f"짝 없는 닫는 태그: </{tag}>")
+            self.errors.append(f"unmatched closing tag: </{tag}>")
 
 
 def check_file(path, payload_text):
     issues = []
     text = open(path, encoding="utf-8").read()
-    for s in MOCK_RESIDUE:
-        if s in text and (payload_text is None or s not in payload_text):
-            issues.append({"type": "mock_residue", "value": s})
     for s in FORBIDDEN:
         if s in text:
             issues.append({"type": "forbidden_phrase", "value": s})

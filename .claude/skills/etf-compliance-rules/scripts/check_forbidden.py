@@ -1,14 +1,27 @@
 #!/usr/bin/env python3
-"""금지 표현 검사기. 파일 또는 디렉토리(재귀)를 받아 위반 목록을 JSON으로 출력한다.
+"""Scan output for recommendation language. Takes files or directories
+(recursive) and prints violations as JSON.
 
-사용: python3 check_forbidden.py <path> [<path> ...]
-종료 코드: 위반 0건이면 0, 있으면 1.
+    python3 check_forbidden.py <path> [<path> ...]
+
+Exit code 0 when clean, 1 when anything is found.
+
+Matching is literal substring, so both language lists are checked on every
+file — an English run and a Korean run are caught by the same pass.
 """
 import json
 import os
 import sys
 
 FORBIDDEN = [
+    # English
+    "buy this", "you should buy", "you should sell", "we recommend",
+    "our recommendation", "recommended stock", "recommended pick",
+    "buying opportunity", "strong buy", "must-buy", "time to buy",
+    "guaranteed return", "guaranteed profit", "risk-free", "can't lose",
+    "will go up", "will rise", "poised to rally", "set to surge",
+    "don't miss", "act now", "price target", "buy the dip",
+    # Korean — kept so Korean-language runs are checked by the same pass
     "사세요", "파세요", "추천합니다", "추천드립니다", "추천 종목",
     "매수 기회", "매수하세요", "매도하세요", "매수 추천", "매도 추천",
     "상승 가능성이 높", "오를 것", "수익이 기대", "수익을 보장",

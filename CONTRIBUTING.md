@@ -29,8 +29,6 @@ is worth more than one asserted to work.
 - **More validated patterns** in `tools/validate.py`, per the rule above.
 - **Data providers** in `tools/data.py` — especially anything that returns Korean ETF
   holdings, which neither current provider covers.
-- **English translations of the agent prompts** under `.claude/`. They are Korean today.
-  Translate one file per PR so behaviour changes stay reviewable.
 - **Bug reports with a reproducing command.**
 
 ## What is not wanted
@@ -42,6 +40,10 @@ is worth more than one asserted to work.
   most of why it is easy to run.
 - Indicators that cannot be computed from an available source. If the data is not
   obtainable, the harness records a coverage gap — it does not estimate.
+
+Open PRs against `main`, which is the English branch. `ko` is the Korean working branch
+and the upstream source; it is translated onto `main` periodically, so a change landing
+on `main` may be re-stated there rather than merged.
 
 ## Working on it
 

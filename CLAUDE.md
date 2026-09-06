@@ -1,11 +1,13 @@
 # ETF Discovery Harness
 
-## 하네스: ETF 발굴 에이전트
+**Goal:** surface investment-candidate ETFs in the order sector → theme → ETF candidates → verification, and produce five structured reports covering the evidence and the risks — never a buy or sell recommendation.
 
-**목표:** "섹터 → 테마 → ETF 후보 → 검증" 순서로 투자 후보 ETF를 발굴하고, 매수·매도 추천 없이 근거와 리스크를 구조화한 리포트 5종을 생성한다.
+**Two triggers:**
+- **Discovery** — for any request to discover, analyse, or verify ETFs, analyse sectors or themes, diagnose the market regime, or produce a candidate report, use `etf-discovery-orchestrator`. The same applies to partial re-runs ("themes again", "reports again", "re-verify ETF X").
+- **Scoring** — when the target is already chosen (how a specific ticker looks right now, a daily judgment, a position check, a head-to-head comparison, validating a pattern), use `etf-signal-scoring`. Computation happens in `tools/score.py` and `tools/validate.py`; the model only interprets.
 
-**트리거 (2종):**
-- **발굴** — ETF 발굴·분석·검증, 섹터/테마 분석, 시장 환경 진단, 투자 후보 리포트 요청 시 `etf-discovery-orchestrator`. 부분 재실행("테마만 다시", "리포트만 다시", "ETF X 재검증")도 동일.
-- **채점** — 대상이 이미 정해진 경우(특정 티커의 "지금 어때", 일일 판단문, 보유 점검, 두 종목 비교, 패턴 검증) `etf-signal-scoring`. 계산은 `tools/score.py`·`tools/validate.py`로 하고 LLM은 해석만 한다.
+Simple questions can be answered directly.
 
-단순 질문은 직접 응답 가능.
+**Output language follows the request.** Asked in Korean, answer in Korean, using the established verdict labels (검토 가능 / 조건부 검토 / 판단 보류 / 우선순위 낮음) and judgment format from `etf-signal-scoring`.
+
+**Branches:** `ko` is the working branch and the source of truth for day-to-day use; `main` is the published English translation, updated periodically.

@@ -1,100 +1,113 @@
 ---
 name: etf-compliance-rules
-description: "ETF 분석 산출물의 컴플라이언스 규칙. 리포트·JSON·설명 문구를 생성하거나 검수하는 모든 작업에서 반드시 이 스킬을 사용할 것. 금지 표현 검사, 매수·매도 추천 방지, ETF 구조·거래 하드 게이트, 4단계 판단 상태(검토 가능/조건부 검토/판단 보류/우선순위 낮음) 분류 기준, QA 체크리스트, 1차 파일럿 acceptance test가 필요하면 트리거."
+description: "Compliance rules for every ETF analysis output. Use this skill whenever generating or reviewing a report, JSON payload, or explanation. Triggers on: checking for recommendation language, preventing buy/sell advice, the ETF structure and tradability hard gate, classifying into the four verdict states (worth reviewing / conditional / on hold / low priority), the QA checklist, and the pilot acceptance test."
 ---
 
-# ETF 컴플라이언스 규칙
+# ETF Compliance Rules
 
-이 서비스는 투자 정보 제공 도구이지 투자 자문·추천 도구가 아니다. 추천 표현은 법적 리스크이자 제품 철학 위반이므로 산출물에 남으면 배포 불가다. 이 하네스의 Decision Gate는 "상품 자체가 투자 후보로 검토 가능한가"만 판단하며, 사용자 조건 기반 판단(Investor Fit)은 별도 단계로 분리되어 있다.
+This is an information tool, not an advisory tool. Recommendation language is both a legal exposure and a violation of the product's premise, so any output still carrying it cannot ship. The Decision Gate here answers one question only — *is this product something a person could put on a review list* — and judgment against a specific investor's circumstances (Investor Fit) is a separate stage.
 
-## 금지 표현
+## Banned language
 
-산출물(md/json/html 전부)에 아래 표현이 있으면 안 된다. 검사는 스크립트로 한다:
+None of the following may appear in any output (md, json, html). Check with the script, not by eye:
 
 ```bash
-python3 {이 스킬 디렉토리}/scripts/check_forbidden.py <검사할 파일 또는 디렉토리>
+python3 {this skill directory}/scripts/check_forbidden.py <file or directory>
 ```
 
-금지 목록(스크립트와 동기 유지): 사세요, 파세요, 추천합니다, 추천드립니다, 추천 종목, 매수 기회, 매수하세요, 매도하세요, 매수 추천, 매도 추천, 상승 가능성이 높, 오를 것, 수익이 기대, 수익을 보장, 안전합니다, 무조건, 확실한 수익, 놓치지 마세요, 지금이 기회, 저점 매수, 목표 주가.
+Banned list (keep in sync with the script): buy this, you should buy, you should sell, we recommend, our recommendation, recommended stock, recommended pick, buying opportunity, strong buy, must-buy, time to buy, guaranteed return, guaranteed profit, risk-free, can't lose, will go up, will rise, poised to rally, set to surge, don't miss, act now, price target, buy the dip.
 
-## 허용 표현으로의 치환
+The script also carries the Korean list, so a Korean-language run is caught by the same pass.
 
-| 쓰고 싶은 말 | 대신 쓰는 말 |
-|-------------|-------------|
-| 이 ETF를 추천합니다 | 검토 가능한 후보입니다 |
-| 상승 가능성이 높습니다 | 이 테마는 ~한 구조가 확인됩니다 |
-| 가격이 부담되지만 살 만합니다 | 조건부 검토가 필요합니다 — 가격 부담 확인 필요 |
-| 판단이 어렵습니다 | 판단 보류가 적절합니다 — {부족 데이터} 확보 후 재검토 |
-| 별로입니다 | 우선순위가 낮습니다 — {약한 축} 확인됨 |
-| 지금 담아도 됩니다 | 실제 투자 실행 여부는 사용자 조건(기간·금액·손실 허용도) 기반 검토가 별도로 필요합니다 |
+## Say this instead
 
-## ETF 구조·거래 하드 게이트
+| Tempting | Write |
+|---|---|
+| I recommend this ETF | This is a candidate worth reviewing |
+| It's likely to go up | This theme shows the following structure |
+| Pricey but worth buying | Conditional — the valuation premium needs checking |
+| Hard to say | On hold — revisit once {missing data} is obtained |
+| It's no good | Low priority — {weak axis} confirmed |
+| You can buy it now | Whether to act on this requires a separate review against your own horizon, position size, and loss tolerance |
 
-3축 등급이 좋아도 ETF 상품 자체의 구조·거래 품질이 부적합하면 후보가 될 수 없다. Decision Gate **전에** 각 ETF에 대해 게이트를 판정한다. 수치 기준은 run_config의 `structure_gate_thresholds`를 사용한다 (기본값은 잠정 — MVP 실행 후 조정).
+## ETF structure and tradability hard gate
 
-체크 항목 14개: AUM, 평균 거래대금, bid-ask spread, 괴리율(premium/discount), 추적오차(tracking error), 추적차이(tracking difference), 총보수·실질 비용, 상장 기간, 레버리지/인버스 여부, 단일종목 레버리지 여부, 합성/스왑/파생 구조, 커버드콜/옵션 전략 여부, 유동성 공급자 품질(확인 가능 시), 환헤지 여부·환율 노출(해외자산 ETF).
+Strong grades on all three axes cannot rescue a product whose structure or trading quality makes it unsuitable. Judge this gate **before** the Decision Gate, for every ETF. Numeric thresholds come from `structure_gate_thresholds` in run_config (defaults are provisional — tune after an MVP run).
 
-판정 규칙 (위에서부터 먼저 걸리는 것):
+Fourteen checks: AUM, average daily turnover, bid-ask spread, premium/discount to NAV, tracking error, tracking difference, expense ratio and all-in cost, time since listing, leveraged/inverse, single-stock leverage, synthetic/swap/derivative structure, covered-call or option overlay, market-maker quality (where observable), and currency hedging or FX exposure (for foreign-asset ETFs).
 
-| status | 조건 |
-|--------|------|
-| **low_priority** (우선순위 낮음) | 레버리지/인버스 또는 단일종목 레버리지인데 일반 후보로 분석됨, AUM·거래대금 최소 기준 미달, 스프레드 과도, 괴리율 반복적으로 큼, 추적오차 매우 큼, 구조 설명 부족한 합성/파생 |
-| **hold** (판단 보류) | 구조·거래 핵심 데이터 다수 미확보(레버리지 여부·AUM·거래대금 중 하나라도 미확인 포함), 보유종목 정보 불투명, 상장 기간이 짧아 추적 품질 데이터 부족 + 다른 확인 수단 없음 |
-| **conditional** (조건부 확인 필요) | 거래대금·스프레드가 경계선, 상장 기간 짧으나 다른 지표 양호, 옵션 전략·환헤지 등 구조 특성이 목적 적합성 확인을 요함 |
-| **pass** (구조·거래 문제 없음) | 위 어디에도 해당 없음 |
+Rules, first match wins:
 
-판정에는 반드시 reasons(걸린 항목)와 impact(Decision Gate에 주는 영향 1문장)를 붙인다. 예: "평균 거래대금이 낮고 스프레드가 넓으며 상장 기간이 짧아 추적 품질 데이터가 부족함 → 테마 구조와 구성종목 점수가 좋아도 실제 매매 시 불리할 수 있어 조건부 검토로 분류합니다."
+| status | Condition |
+|---|---|
+| **low_priority** | Leveraged/inverse or single-stock leverage analysed as an ordinary candidate; AUM or turnover below minimum; spread excessive; premium/discount repeatedly large; tracking error very large; synthetic/derivative structure with inadequate disclosure |
+| **hold** | Several core structure/trading fields unobtained (including any one of leverage status, AUM, turnover); holdings opaque; listed too recently for tracking-quality data with no other way to verify |
+| **conditional** | Turnover or spread borderline; recently listed but other metrics sound; option overlay, currency hedging, or similar structural feature that needs a fit check |
+| **pass** | None of the above |
 
-## 최종 판단 상태 — 분류 규칙
+Every verdict carries `reasons` (which checks tripped) and `impact` (one sentence on what it does to the Decision Gate). Example: "Low average turnover, wide spread, and too short a listing history for tracking-quality data → even with good theme-structure and holdings grades this may execute poorly in practice, so it is classified as conditional."
 
-모든 최종 ETF 결론은 아래 4개 중 하나로 끝난다. 판정 순서: **① 데이터 커버리지 게이트 → ② ETF 구조·거래 하드 게이트 → ③ 3축 등급 게이트 → ④ 명시적 리스크 게이트 → ⑤ 최종 상태 확정** (위에서부터 먼저 걸리는 것 적용).
+## The four verdict states
 
-| 상태 | 규칙 |
-|------|------|
-| **판단 보류** | 3축 중 하나라도 커버리지 60% 미만 또는 등급 null, 필수 보유종목 데이터 부족, 구조·거래 게이트 hold(데이터 부족), 핵심 근거가 출처 간 충돌 |
-| **우선순위 낮음** | 3축 중 2개 이상 C+ 이하, 테마 순도 40% 미만, 구조·거래 게이트 low_priority(레버리지/인버스/단일종목 레버리지 등 부적합 구조 포함) |
-| **조건부 검토** | 3축 중 1개 C+ 이하, 가격 부담 또는 상위 종목 쏠림, 구조·거래 게이트 conditional(유동성·스프레드·추적 품질 확인 필요), 그 외 명시적 리스크(과열·규제) 확인 |
-| **검토 가능** | 3축 모두 B- 이상, 전 축 커버리지 70% 이상, 구조·거래 게이트 pass, 미해결 치명 리스크 없음 |
+Every final ETF conclusion ends in exactly one of these. Evaluate in order — **① data coverage gate → ② structure/tradability hard gate → ③ three-axis grade gate → ④ explicit risk gate → ⑤ final state** — and the first one that trips decides.
 
-"검토 가능"도 매수 추천이 아니며 "상품 자체로 투자 후보에 올릴 수 있다"는 의미임을 결과에 병기한다. 검토 가능 후보 0개도 유효한 결과다 — 억지로 만들지 않는다.
+| State | Rule |
+|---|---|
+| **on hold** | Any axis below 60% coverage or graded null; required holdings data missing; structure gate returned hold (insufficient data); core evidence conflicts across sources |
+| **low priority** | Two or more axes at C+ or below; theme purity under 40%; structure gate returned low_priority (including leveraged/inverse/single-stock-leverage structures) |
+| **conditional** | One axis at C+ or below; valuation premium or heavy top-holding concentration; structure gate returned conditional (liquidity, spread, tracking quality need checking); or any other explicit risk confirmed (overheating, regulation) |
+| **worth reviewing** | All three axes B− or better; every axis at 70%+ coverage; structure gate passed; no unresolved critical risk |
 
-## QA 체크리스트 (qa-compliance-guard가 사용)
+State alongside the result that "worth reviewing" is not a recommendation to buy — it means the product itself can go on a review list. **Zero candidates worth reviewing is a valid outcome.** Do not manufacture one.
 
-### A. 컴플라이언스·형식
-1. 금지 표현 0건 (스크립트 결과 첨부)
-2. 모든 최종 결론이 4개 상태 중 하나로 끝남
-3. 모든 등급에 기준일·출처·confidence·coverage 표기
-4. 면책 문구(meta.disclaimer) 존재
-5. 사용자 조건이 필요한 판단(투자 기간·금액·비중·계좌·세금 적합성)을 ETF 자체 판단으로 단정하지 않음
+### Korean output
 
-### B. 데이터 정합성
-6. 테마 분석(전망)과 구성종목 분석(현재 재무)이 섞이지 않음 — 08에 현재 재무·가격 지표가 근거로 등장하거나, 09에 전망이 근거로 등장하면 위반
-7. 최종 등급이 weighted_grade.py 산출과 일치 (final_numeric 대조, 표본)
-8. 데이터 소스 우선순위 준수 — sources의 reliability_tier(primary/secondary/tertiary)가 구분 기재되고, unsupported가 등급 근거로 쓰이지 않음
-9. 출처 충돌이 source_conflicts에 기록되고 설명 문장에서 숨겨지지 않음
-10. 테마 evidence pack에 긍정·부정 근거가 모두 존재 (부정 0건이면 "검증 불충분" 표시 확인)
-11. 핵심 테마 3개가 최소 선정 조건(8개 중 2개 이상)을 만족한다는 판정 근거가 05에 기록됨
+When the request is in Korean, use these labels — they are the established vocabulary, not a fresh translation:
 
-### C. 게이트·구조
-12. ETF 구조·거래 하드 게이트가 전 후보에 적용되고 Decision Gate 판정에 반영됨
-13. final_etf_decision.md 마지막에 "투자 판단 가능성" 섹션 존재 (5개 하위 항목 + 안내 문구)
-14. analysis.json 최상위 필수 키 20개(meta 포함) 존재 — 신규 키(source_quality_policy, etf_structure_trading_gate, investment_judgment_readiness, pilot_acceptance_summary, investor_fit_required) 포함
-15. 데이터 부족 항목이 data_coverage.md에 빠짐없이 반영됨
+| English | 한국어 |
+|---|---|
+| worth reviewing | 검토 가능 |
+| conditional | 조건부 검토 |
+| on hold | 판단 보류 |
+| low priority | 우선순위 낮음 |
 
-### D. 1차 파일럿 acceptance test (output_scope=pilot일 때 추가 실행)
-아래 15문항을 pass/fail/needs_revision으로 판정해 `pilot_acceptance_summary`에 기록한다:
-1. 섹터 후보가 시장 환경과 연결되어 납득되는가?
-2. 테마 후보 10개가 너무 뻔하거나 허구적이지 않은가?
-3. 각 테마에 긍정 근거와 부정 근거가 모두 있는가?
-4. 핵심 테마 3개 선정 이유가 데이터로 설명되는가?
-5. 탈락한 테마의 탈락 이유가 유형화되어 구체적인가?
-6. ETF 후보가 실제 존재하고 기본 정보가 확인되는가?
-7. ETF 후보가 같은 테마 안에서 비교 가능한 유형으로 분류되는가?
-8. 밸류체인 매핑이 ETF 이름이 아니라 보유종목 기준인가?
-9. 테마 구조/재무 상태/가격 적정성 축이 섞이지 않았는가?
-10. ETF 구조·거래 게이트가 적용됐는가?
-11. Decision Gate가 4개 상태 중 하나로 끝나는가?
-12. final_etf_decision.md 마지막에 투자 판단 가능성 평가가 있는가?
-13. data_coverage.md가 실제로 부족 데이터와 신뢰도 낮은 항목을 보여주는가?
-14. 금지 표현이 없는가?
-15. analysis.json이 WebView/MTS UI로 변환 가능한 구조인가 (스키마 준수)?
+## QA checklist (used by qa-compliance-guard)
+
+### A. Compliance and form
+1. Zero banned phrases (attach the script output)
+2. Every final conclusion ends in one of the four states
+3. Every grade carries as-of date, sources, confidence, and coverage
+4. Disclaimer present (`meta.disclaimer`)
+5. Judgments that depend on the investor's own circumstances (horizon, amount, position size, account type, tax) are not asserted as properties of the ETF
+
+### B. Data integrity
+6. Theme analysis (forward-looking) and holdings analysis (current financials) are not mixed — current financial or valuation figures cited as evidence in 08, or forward-looking claims cited in 09, are violations
+7. Final grades match the `weighted_grade.py` output (spot-check `final_numeric`)
+8. Source priority respected — `reliability_tier` (primary/secondary/tertiary) recorded per source, and nothing marked unsupported used as grading evidence
+9. Source conflicts recorded in `source_conflicts` and not hidden in the prose
+10. Every theme evidence pack contains both positive and negative evidence (if negatives are zero, confirm it is marked "insufficiently verified")
+11. The three selected themes each satisfy the minimum selection condition (2 of 8), with the reasoning recorded in 05
+
+### C. Gates and structure
+12. The structure/tradability hard gate is applied to every candidate and reflected in the Decision Gate verdict
+13. `final_etf_decision.md` ends with the "What this supports deciding" section (five sub-sections plus the closing note)
+14. All 20 required top-level keys present in `analysis.json` (including `meta`), among them `source_quality_policy`, `etf_structure_trading_gate`, `investment_judgment_readiness`, `pilot_acceptance_summary`, `investor_fit_required`
+15. Every coverage gap appears in `data_coverage.md`
+
+### D. Pilot acceptance test (additionally, when `output_scope=pilot`)
+Judge each of the 15 questions pass / fail / needs_revision and record in `pilot_acceptance_summary`:
+1. Do the sector candidates follow sensibly from the market regime?
+2. Are the 10 theme candidates neither obvious filler nor invented?
+3. Does every theme carry both positive and negative evidence?
+4. Is the selection of the three core themes explained with data?
+5. Are the rejected themes' reasons categorised and specific?
+6. Do the ETF candidates actually exist, with basic facts verified?
+7. Are candidates within a theme classified into comparable types?
+8. Is the value-chain mapping based on holdings rather than the ETF's name?
+9. Are the theme-structure, financial, and valuation axes kept separate?
+10. Was the structure/tradability gate applied?
+11. Does the Decision Gate end in one of the four states?
+12. Does `final_etf_decision.md` close with the judgment-readiness assessment?
+13. Does `data_coverage.md` actually show the gaps and low-confidence items?
+14. Is the output free of banned language?
+15. Is `analysis.json` structured so it can drive the WebView/MTS UI (schema respected)?

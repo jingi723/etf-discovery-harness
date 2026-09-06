@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
-"""가중평균 등급 계산기.
+"""Weighted-average grade calculator.
 
-입력(stdin 또는 파일 인자): {"items": [{"name": str, "weight": float, "grade": "B+"|null}]}
-출력: {"final_grade", "numeric", "coverage_pct", "contributions"}
+Input (stdin or a file argument):
+    {"items": [{"name": str, "weight": float, "grade": "B+"|null}]}
+Output:
+    {"final_grade", "numeric", "coverage_pct", "contributions"}
 
-grade가 null이거나 미상인 항목은 커버리지에서 제외하고, 등급이 있는 항목의
-가중치로 정규화하여 평균을 낸다. 커버리지 판정(60% 게이트)은 호출자 책임.
+Items with a null or unknown grade are excluded from coverage; the average is
+normalised over the weights of the graded items only. Acting on coverage (the
+60% gate) is the caller's job.
 """
 import json
 import sys
@@ -26,7 +29,7 @@ def main():
     if graded_w == 0:
         print(json.dumps({"final_grade": None, "numeric": None,
                           "coverage_pct": coverage,
-                          "note": "등급 산정 불가 — 등급 부여된 항목 없음"},
+                          "note": "cannot grade — no item carries a grade"},
                          ensure_ascii=False, indent=2))
         return
 
