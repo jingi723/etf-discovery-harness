@@ -18,13 +18,23 @@ in one of four states: **worth reviewing / conditional / on hold / low priority*
 > a recommendation to buy or sell any security.
 
 <p align="center">
-  <img src="docs/images/holdings-heatmap.png" width="78%" alt="Constituent score map: a treemap where each tile is a holding, sized by portfolio weight and coloured by its financial grade">
+  <img src="docs/images/scan-analysis.png" width="47%" alt="Scan output for one ETF: a one-month score of 49.5, then each of the seven indicators with its own colour band, score and weight">
+  <img src="docs/images/scan-holdings.png" width="47%" alt="The same fund's top holdings as a treemap, each tile sized by weight and coloured by that holding's own score, with a legend">
 </p>
 <p align="center">
-  <sub><b>The constituent score map.</b> Tile area is portfolio weight, colour is the holding's grade
-  — green A, blue B, amber C, red D/F. Micron at 8.16% carries an A+; Intel at 6.17% a C−.<br>
-  An index can hold up while its internals roll over, and this is where you see it.
-  Real output from the run in <a href="examples/">examples/</a>.</sub>
+  <sub><b>The default output.</b> Every indicator carries its own score, weight and band —
+  and the constituent colours come from scoring each holding, not from eye.<br>
+  Colours follow the Korean market convention, where red is the strong end.
+  Real output from <a href="examples/scan/">examples/scan/</a>.</sub>
+</p>
+
+<p align="center">
+  <img src="docs/images/holdings-heatmap.png" width="72%" alt="Constituent score map from the full pipeline: a treemap where each tile is a holding, sized by portfolio weight and coloured by its financial grade">
+</p>
+<p align="center">
+  <sub><b>What the full pipeline adds.</b> The same map, coloured by a graded financial
+  assessment of each holding rather than by its price signal — Micron at 8.16% carries an
+  A+, Intel at 6.17% a C−. Getting there costs about sixty agents instead of three.</sub>
 </p>
 
 ## Why this exists
@@ -76,7 +86,7 @@ detail page).
 
 ## The tools
 
-Five scripts you can run without Claude Code at all. They are the deterministic core;
+Six scripts you can run without Claude Code at all. They are the deterministic core;
 the agents call the same logic and explain the output.
 
 ### `tools/score.py` — seven indicators, three horizons
@@ -165,6 +175,18 @@ the top of this README came out of it; open
 
 The sample run's prose is Korean, like the agent prompts — see the note below.
 
+### `tools/render_scan.py` — scan scores to static HTML
+
+The full pipeline's payload carries three grading axes and value chains; a scan carries
+neither, so `render.py` cannot read it. This renders the scan's own shape — indicator
+rows with their bands, and a treemap coloured by each holding's score rather than by a
+grade. The two images at the top of this README came out of it.
+
+```bash
+python3 tools/render_scan.py _workspace/12b_signal_scores.json \
+    --gate _workspace/11_structure_gate.json -o html/
+```
+
 ### `tools/data.py` — market data, two optional backends
 
 Selected automatically by which environment variables are set. Handles gzip, 429
@@ -184,7 +206,8 @@ for a log that survives across processes. A plain `score.py` run costs 3 calls; 
 │   ├── data.py                         # FMP + Toss Securities providers
 │   ├── score.py                        # 7 indicators × 3 horizons
 │   ├── validate.py                     # pattern backtester
-│   ├── render.py                       # ui_payload.json → static HTML
+│   ├── render.py                       # full-pipeline payload → static HTML
+│   ├── render_scan.py                  # scan scores → static HTML
 │   └── check_workspace.py              # validates run output against the contract
 ├── .claude/
 │   ├── agents/                         # 15 specialised agent definitions

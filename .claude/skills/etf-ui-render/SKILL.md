@@ -7,6 +7,21 @@ description: "Standard for turning research output (analysis.json) into mobile W
 
 This layer produces the **visual representation only**. It computes no grades, writes no verdicts, and uses no figure absent from the source.
 
+## Two renderers
+
+`tools/render.py` reads the full pipeline's `ui_payload.json`, which carries three
+grading axes, value chains and a holdings heatmap. **A scan produces none of those**, so
+it has its own renderer, `tools/render_scan.py`, reading `12b_signal_scores.json` plus
+the structure gate:
+
+```bash
+python3 tools/render_scan.py _workspace/12b_signal_scores.json \
+    --gate _workspace/11_structure_gate.json --meta meta.json -o _workspace/html/
+```
+
+Both are deterministic and both copy values without computing, so neither needs an agent
+to review it. Everything below describes the full-pipeline layer.
+
 ## Layer structure
 
 ```

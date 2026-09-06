@@ -15,6 +15,7 @@ What you get from "what's worth a look in this market". Two agents and a script:
 | `11_structure_gate.json` | Gate verdicts and why none reached `pass` |
 | `12b_signal_scores.json` | Raw scores, three horizons, plus constituent scores |
 | `02_sector_scores.json` | The sector grades the scan started from |
+| `html/` | The same result as pages — open any `scan_*.html` in a browser, they are self-contained |
 
 Worth reading for two things it demonstrates: the macro input differing by sector under
 one regime (energy 62, utilities 30, tech 15, semis 12), and two funds tying on every
