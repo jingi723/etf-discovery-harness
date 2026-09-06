@@ -18,12 +18,13 @@ four states: **worth reviewing / conditional / on hold / low priority**.
 > a recommendation to buy or sell any security.
 
 <p align="center">
-  <img src="docs/images/etf-detail.png" width="46%" alt="ETF verdict page: three grading axes with coverage and confidence, and the reasons behind a conditional verdict">
-  <img src="docs/images/holdings-heatmap.png" width="46%" alt="Constituent score map: a treemap sized by portfolio weight and coloured by grade">
+  <img src="docs/images/holdings-heatmap.png" width="78%" alt="Constituent score map: a treemap where each tile is a holding, sized by portfolio weight and coloured by its financial grade">
 </p>
 <p align="center">
-  <sub>Sample output — the verdict page and the constituent score map, where area is portfolio weight and colour is grade.<br>
-  Browse the full run in <a href="examples/">examples/</a>.</sub>
+  <sub><b>The constituent score map.</b> Tile area is portfolio weight, colour is the holding's grade
+  — green A, blue B, amber C, red D/F. Micron at 8.16% carries an A+; Intel at 6.17% a C−.<br>
+  An index can hold up while its internals roll over, and this is where you see it.
+  Real output from the run in <a href="examples/">examples/</a>.</sub>
 </p>
 
 ## Why this exists
@@ -151,9 +152,11 @@ python3 tools/render.py path/to/ui_payload.json -o ./html
 ```
 
 It copies payload values verbatim and computes nothing, which is why no agent reviews
-its output — a renderer that cannot invent a grade cannot misreport one. The pages at
+its output — a renderer that cannot invent a grade cannot misreport one. The treemap at
 the top of this README came out of it; open
-[`examples/etf_SOXX.html`](examples/etf_SOXX.html) to click through one.
+[`examples/etf_SOXX.html`](examples/etf_SOXX.html) to click through the whole page.
+
+The sample run's prose is Korean, like the agent prompts — see the note below.
 
 ### `tools/data.py` — market data, two optional backends
 
