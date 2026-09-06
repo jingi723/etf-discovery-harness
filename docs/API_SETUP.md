@@ -1,8 +1,10 @@
 # API Setup
 
-The harness runs without any API key. It falls back to official issuer, exchange and
-filing sources, and records whatever it could not obtain as a coverage gap instead of
-estimating it.
+The agent research workflow can run without vendor API keys when web research tools
+are available. It uses official issuer, exchange and filing sources and records
+coverage gaps. **The live `score.py` and `validate.py` CLIs require FMP access**;
+they call FMP directly and do not fall back to web research or Toss. Viewing the
+bundled sample and running `validate.py --self-check` require no credentials.
 
 Adding a key changes two things that matter: numbers arrive as JSON instead of being
 parsed out of rendered HTML, and every response carries an explicit as-of date, which

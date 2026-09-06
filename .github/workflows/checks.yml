@@ -1,0 +1,36 @@
+name: Checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline:
+    name: Offline checks (Python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ['3.9', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Compile Python sources
+        run: python -m compileall -q tools .claude/skills
+      - name: Backtester self-check
+        run: python tools/validate.py --self-check
+      - name: Scoring self-check
+        run: python tools/score.py --self-check
+      - name: Validate sample HTML
+        run: python .claude/skills/etf-ui-render/scripts/check_html.py examples
+      - name: Check CLI entry points
+        run: |
+          python tools/score.py --help
+          python tools/validate.py --help
+          python tools/render.py --help
+          python tools/check_workspace.py --help

@@ -50,8 +50,24 @@ on `main` may be re-stated there rather than merged.
 ```bash
 python3 tools/validate.py --self-check     # must print "ok"
 python3 tools/score.py --self-check        # must print "ok"
-python3 tools/score.py SOXX --horizon swing
+python3 -m compileall -q tools .claude/skills
+python3 .claude/skills/etf-ui-render/scripts/check_html.py examples
 ```
+
+These checks run offline and are also run by GitHub Actions. Live scoring is an
+optional integration check requiring FMP endpoint access; see [API setup](docs/API_SETUP.md).
+
+## Good first contributions
+
+- Try the sample steps in either README and report the exact step that was unclear.
+- Compare one English prompt on `main` with its Korean source on `ko` and report
+  a behavior or terminology mismatch, keeping the output contract and decision states.
+- Improve a tool's help text with a concrete input/output example.
+- Document a data coverage gap with its source and as-of date, without credentials.
+
+Use the issue forms to propose a change before a substantial implementation.
+For translations, include the original and translated prompt's output on the same
+small input so reviewers can compare behavior.
 
 There is no test framework. Non-trivial logic carries a `--self-check` that fails
 loudly if it breaks; add to it rather than introducing a suite.

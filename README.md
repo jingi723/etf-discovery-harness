@@ -1,21 +1,21 @@
 # ETF Discovery Harness
 
+[English](README.md) · [한국어](README.ko.md)
+
+[![Checks](https://github.com/jingi723/etf-discovery-harness/actions/workflows/checks.yml/badge.svg)](https://github.com/jingi723/etf-discovery-harness/actions/workflows/checks.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
 [![dependencies: none](https://img.shields.io/badge/dependencies-none-brightgreen.svg)](#the-tools)
 [![Built for Claude Code](https://img.shields.io/badge/built%20for-Claude%20Code-d97757.svg)](https://claude.ai/code)
 
-A [Claude Code](https://claude.ai/code) harness that narrows the market down to a
-short list of ETFs — **market regime → sector → theme → ETF candidates → verification** —
-and writes down the evidence, the risks, and what it could not find out.
+**Turn ETF research into evidence you can inspect.**
 
-Fifteen specialised agents and seven skills handle regime diagnosis, theme evidence
-collection, holdings-level analysis, three independent grading axes, compliance QA,
-and report rendering. The output is never a recommendation to buy — every candidate ends
-in one of four states: **worth reviewing / conditional / on hold / low priority**.
+A Claude Code research harness with 15 agents, holdings-level grades, and Python
+tools that test market patterns against a baseline. Follow the path from
+**market → sector → theme → ETF → evidence, risks, and missing data**.
 
-> This project produces research notes, not investment advice. Nothing it generates is
-> a recommendation to buy or sell any security.
+[Try the sample](#quick-start) · [Read a decision report](examples/final_etf_decision.md) ·
+[Inspect missing data](examples/data_coverage.md) · [How it works](docs/HARNESS_DESIGN.md)
 
 <p align="center">
   <img src="docs/images/scan-scores.png" width="100%" alt="Scan output for one ETF: a one-month score of 49.5, then each of the seven indicators with its own colour, score and weight">
@@ -39,6 +39,72 @@ in one of four states: **worth reviewing / conditional / on hold / low priority*
   <a href="examples/">examples/</a>.</sub>
 </p>
 
+**Inspect the holdings, not just the ticker.** Separate theme, financial, and valuation
+grades make disagreements visible. Missing data stays visible in a coverage report.
+Python tools use the standard library only; sample viewing needs no API key or Claude Code.
+
+If this approach is useful, **star the repo** to keep it handy. Reproducible bug
+reports and [small contributions](CONTRIBUTING.md#good-first-contributions) help it improve.
+
+> Research notes, not investment advice. The screenshot and bundled reports are
+> historical examples, not live market views.
+
+## Quick start
+
+### 1. Explore the sample — no API key
+
+With Git and Python 3.9+ installed:
+
+```bash
+git clone https://github.com/jingi723/etf-discovery-harness.git
+cd etf-discovery-harness
+python3 -m http.server 8000 --bind 127.0.0.1 --directory examples
+```
+
+Open **http://127.0.0.1:8000/etf_SOXX.html** to explore the holdings map and grade
+tables. Stop the server with `Ctrl+C`. You can also open the HTML file directly.
+This is one saved detail page; the full run's navigation pages are not bundled.
+The historical sample is in Korean. Prompts on `main` are English, and reports
+follow your request's language; [한국어 안내](README.ko.md).
+
+### 2. Score a ticker — FMP key required
+
+The live scoring and backtesting CLIs require an FMP key with access to the endpoints
+they call. They do not fall back to web research. See [API setup](docs/API_SETUP.md).
+
+```bash
+cp .env.example .env
+# Edit .env and replace FMP_API_KEY with your key, then run:
+python3 tools/score.py SOXX --horizon swing --holdings
+python3 tools/validate.py SOXX --pattern ftd --horizon 10
+```
+
+No `pip install` or virtualenv is needed. To check the backtester without credentials:
+
+```bash
+python3 tools/validate.py --self-check
+```
+
+Expected output: `ok`.
+
+### 3. Start a discovery scan — Claude Code required
+
+Launch `claude` in the cloned repository, then paste this prompt into its session:
+
+```text
+Find US-listed ETF candidates worth reviewing in the current market.
+Start with a scan and summarize each candidate's current state and data gaps.
+```
+
+The agent workflow can research official sources without vendor API keys when its
+web tools are available. Claude Code needs its own setup and access; provider keys
+and endpoint access are separate. Each candidate ends in **worth reviewing /
+conditional / on hold / low priority**.
+
+The scan is the default. For holdings-level evidence and the full report set, ask
+to deepen the scan into a full analysis. This invokes substantially more agents;
+see the [measured run costs](docs/RUN_COST.md) before choosing the depth.
+
 ## Why this exists
 
 Most LLM stock analysis has the same two failure modes. It asserts patterns it never
@@ -61,25 +127,6 @@ Run these yourself — `tools/validate.py` is the script that killed them.
 +7.5 on the one-month profile and −3.6 on the long-term profile, because the rally
 improved trend while it destroyed the entry point. A single blended score would have
 hidden that. The harness reports which indicator split them.
-
-## Quick start
-
-```bash
-git clone https://github.com/jingi723/etf-discovery-harness.git
-cd etf-discovery-harness
-cp .env.example .env      # optional — see docs/API_SETUP.md
-python3 tools/score.py SOXX --horizon swing --holdings
-```
-
-The Python tools use **only the standard library** — no `pip install`, no
-`requirements.txt`, no virtualenv. Python 3.9+.
-
-To run the full discovery pipeline, open Claude Code in the repo and ask for it:
-
-```bash
-claude
-> Find ETF candidates worth reviewing in the current market
-```
 
 Not ready to install? [`examples/`](examples/) holds one real run per depth — a
 [scan](examples/scan/scan_result.md) (two agents, ranked funds with per-indicator
@@ -175,7 +222,7 @@ its output — a renderer that cannot invent a grade cannot misreport one. The t
 the top of this README came out of it; open
 [`examples/etf_SOXX.html`](examples/etf_SOXX.html) to click through the whole page.
 
-The sample run's prose is Korean, like the agent prompts — see the note below.
+The sample run's prose is Korean and predates the English translation — see below.
 
 ### `tools/render_scan.py` — scan scores to static HTML
 
@@ -321,12 +368,13 @@ optimisations that were tried and did not work.
 
 - Python 3.9+ (standard library only)
 - [Claude Code](https://claude.ai/code) — for the agent pipeline, not for the tools
-- Optional: an [FMP](https://financialmodelingprep.com/) key — see [docs/API_SETUP.md](docs/API_SETUP.md)
+- An [FMP](https://financialmodelingprep.com/) key for live CLI scoring/backtesting;
+  optional for the agent research workflow — see [docs/API_SETUP.md](docs/API_SETUP.md)
 - Optional: Chrome/Chromium for PDF and PNG export, pandoc or `textutil` for DOCX
 
-Without an API key the harness still runs, using official issuer, exchange and
-filing sources, and marks whatever it could not obtain as a coverage gap rather than
-guessing.
+Without a vendor API key, the agent workflow can use official issuer, exchange and
+filing sources through its web tools. The live Python CLIs require FMP access;
+the bundled sample and backtester self-check work offline.
 
 ## Contributing
 

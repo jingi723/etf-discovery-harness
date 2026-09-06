@@ -1,0 +1,29 @@
+name: Bug report / 오류 제보
+description: Share a reproducible failure without credentials or personal portfolio data.
+title: '[Bug] '
+body:
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps and command / 재현 방법
+      description: Include the command or prompt, ticker, and horizon. Remove keys and personal data.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs actual / 예상 결과와 실제 결과
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment / 실행 환경
+      description: OS, Python version, commit, and provider name (never the key). For agent issues, include the Claude Code version.
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Redacted output / 민감정보를 제거한 출력
+      render: text

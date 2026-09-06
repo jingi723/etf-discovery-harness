@@ -1,0 +1,21 @@
+name: Improvement / 개선 제안
+description: Propose a use case, translation, provider, or evidence-backed pattern.
+title: '[Idea] '
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do? / 해결하려는 문제
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change / 제안하는 변경
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and limitations / 근거와 한계
+      description: For patterns, include sample count, period, ticker, forward horizon, baseline, and negative results. For providers, link the source and describe coverage.
