@@ -59,6 +59,9 @@ Follow this section order exactly:
 - Financial condition: {grade} — ← 09 explanation
 - Valuation: {grade} — ← 10 explanation (with growth context alongside)
 ## 4. Structure/tradability gate   ← 11 structure_trading_gate (per ETF: status + reasons + impact)
+## 4b. Current state                ← 12b_signal_scores.json (per ETF: long / swing / short score, constituent breadth, macro used)
+     State plainly that this is timing context and does not change the verdict:
+     the four states describe the product, not the moment.
 ## 5. Why it remained              ← 12 why_remained
 ## 6. Why others were excluded     ← 12 excluded
 ## 7. Conditions to revisit        ← 12 recheck_conditions

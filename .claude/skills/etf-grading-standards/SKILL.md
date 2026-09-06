@@ -39,6 +39,23 @@ Ten levels: `A+ A0 A- B+ B0 B- C+ C0 C- D`. Numeric mapping A+=10 … D=1.
 - A C on the valuation axis is not "bad" — it is "a valuation premium is confirmed at current earnings", and it is stated alongside the growth context.
 - Every final grade carries its as-of date, source count, `coverage_pct`, and `confidence`.
 
+## Where "weak" begins (financial axis)
+
+The financial rubric turns on how many areas are weak, but "weak" was undefined, and
+two independent scorers reading identical figures split A- versus B0 on exactly that
+word. Use these anchors so the boundary is a rule rather than a judgement call:
+
+| Area | Weak when |
+|---|---|
+| Growth | Revenue growth below 0% YoY. **0–5% is modest, not weak** |
+| Profitability | Operating margin below its sub-sector's typical range, or falling more than 5pp YoY |
+| Balance sheet | Net debt/EBITDA above 3×, or interest coverage below 3× |
+| Cash generation | Negative FCF outside a stated investment phase |
+
+A range = no weak area. B range = one. C range = two or more. D = distress (sustained
+losses plus excessive debt). These are conventions, not findings — they exist to make
+runs reproducible, and changing them changes grades, so change them deliberately.
+
 ## Valuation — sub-sector multiple bands
 
 Applying one P/E rule ("tech is 20–40×") misprices half the sector. **Normal multiples differ by sub-sector even within semiconductors.**
@@ -50,10 +67,27 @@ Applying one P/E rule ("tech is 20–40×") misprices half the sector. **Normal 
 | Memory | 8–15× (through-cycle) | MU, SK Hynix |
 | Semi equipment | 25–50× | AMAT, LRCX |
 | Utilities / IPP | 15–30× | CEG, PEG |
+| Analog / mixed-signal IDM | **no band — see below** | TXN, ADI, NXPI, ON, STM, MCHP |
 
 **Grading**: below the band → A range / inside the band → B range / 1–2× above → C range / more than 2× above, or lossmaking → D
 
-### Cyclicals do not get a P/E
+### Analog IDMs are cyclical in the trough direction
+Analog and mixed-signal IDMs sell into autos and industrials, so their earnings swing with that inventory cycle — and a trough inflates the P/E exactly as a peak deflates a miner's. **Check the margin before reading the multiple.** Measured across SOXX holdings on 2026-09-06:
+
+| | P/E TTM | Net margin | Revenue YoY | |
+|---|---:|---:|---:|---|
+| NXPI | 19.3× | 22.6% | −2.7% | near-normal margin |
+| TXN | 39.1× | 31.1% | +13.0% | normal margin — a real premium |
+| ADI | 42.8× | 29.8% | +16.9% | normal margin — a real premium |
+| ON | 47.1× | 10.2% | −15.3% | **trough** |
+| STM | 99.0× | 3.5% | −10.8% | **trough** |
+| MCHP | 102.8× | 8.8% | +7.1% | **margin still depressed** |
+
+The 19–103× spread is not valuation dispersion; it is margin dispersion. Names at a normal ~25–30% net margin sit at 19–43×, and everything above that is a compressed denominator.
+
+**Rule**: if an analog IDM's net margin is well below the ~25–30% peer normal, the P/E is uninformative. Grade on EV/Sales, P/B, and margin position within the cycle, and mark the P/E item neutral — the same treatment miners get, for the opposite reason. Do not fall back on the fabless band; these are different business models and it was only ever used as a loose stand-in.
+
+### Commodity cyclicals do not get a P/E
 Commodity miners (uranium, lithium, base metals) print their **lowest P/E at the earnings peak**. A low multiple may be a cycle-top signal, not a cheap stock.
 - Case: SQM at a 48.9% operating margin (cycle-peak margin) with a forward P/E of 8.6×. That does not hold once lithium prices roll over
 - **Instead**: judge miners on **P/B, EV/EBITDA, and cost-curve position**, and mark the P/E item neutral

@@ -92,6 +92,21 @@ One `etf-evaluator` call, after every score file is complete (barrier). Alongsid
 ### Phase 11: Decision Gate
 One `decision-gate` call. Order: coverage gate → structure/tradability hard gate → three-axis grade gate → explicit risk gate → final state.
 
+### Phase 11.5: current-state scoring (script, no agent)
+
+The three axes answer *is this product sound*. They say nothing about *what state it is in right now*, so a finalist can carry good grades while every one of its largest holdings is rolling over. Score the finalists with the same framework the single-ticker path uses:
+
+```bash
+python3 tools/score.py {ticker} --horizon long  --macro {N} --holdings
+python3 tools/score.py {ticker} --horizon swing --macro {N}
+```
+
+Take `--macro` from `01_market_regime.json` using the band in `etf-signal-scoring`; the regime is already established, so do not re-derive it. Run this for finalists only, and write `_workspace/12b_signal_scores.json` as `{ticker: {long, swing, short, breadth, macro_used, as_of}}`.
+
+Costs about 15 API calls per finalist and no agent tokens, so it is worth running even when the pipeline is otherwise scoped down.
+
+**This does not feed the Decision Gate.** The four states describe the product, not the moment — keeping the signal score out of the gate is what preserves that distinction. It is reported alongside, so a reader sees both "this product holds up" and "its constituents are broadly below their averages right now".
+
 ### Phase 12: report generation
 One `report-generator` call → `_workspace/13_reports/`, 4 outputs (pilot) or 5 (full) per `output_scope`. `final_etf_decision.md` must contain the "What this supports deciding" section.
 
