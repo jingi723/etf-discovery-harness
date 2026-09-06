@@ -11,7 +11,7 @@ Everything below is measured from this repository's own runs, not estimated. Whe
 | Command | FMP calls |
 |---|---:|
 | `score.py TICKER --horizon X` | **3** (2 price series, 1 ratios) |
-| the same ticker across all 3 horizons | **3**, not 9 — responses are cached in-process |
+| the same ticker across all 3 horizons in one Python process | **3 network requests**, 9 provider calls within the cache TTL; separate CLI processes make 9 requests |
 | `score.py TICKER --holdings` | **15** (the above + holdings + 10 constituent price series) |
 | `validate.py TICKER --pattern X` | **1** |
 | `render.py` | **0** (reads a local payload) |
@@ -27,9 +27,15 @@ data.load_env()
 print(data.call_summary())   # {'by_endpoint': {'fmp:quote': 2, ...}, 'total': 5}
 ```
 
-Set `ETF_API_LOG=/path/to/log.jsonl` to also append one JSON line per call, which survives across processes.
+Export `ETF_API_LOG=/path/to/log.jsonl` before starting Python to append one JSON
+line per provider call, including cache hits. Cache/log settings are read when
+`data` is imported; placing them only in `.env` will not configure that import.
 
-**Responses are cached in-process for 5 minutes** (`ETF_CACHE_TTL` seconds, 0 disables). It is time-bounded on purpose — serving yesterday's close as today's is worse than spending the request — and `data.clear_cache()` forces a refresh at a session boundary or after a market close. `call_summary()` separates `total` (calls your code made) from `network_requests` (the ones that count against a rate limit).
+**Responses are cached in-process for 5 minutes** (export `ETF_CACHE_TTL` in seconds,
+0 disables). `data.clear_cache()` forces a refresh. `call_summary()` separates
+provider calls from cache hits; its `network_requests` field is their difference,
+not a count of all HTTP attempts. Retries and Toss token requests are not counted,
+so it must not be treated as exact vendor billing or rate-limit usage.
 
 Without it, scoring six funds across three horizons issued over 150 requests, most of them refetches of the same price series. Cached, the same scan costs 58.
 

@@ -1,14 +1,19 @@
-# Harness Design
+# ETF Research Agent — Architecture
 
 Version 1.4 · a design summary, not the specification.
 
-**The source of truth is `.claude/agents/` and `.claude/skills/`.** Where this document and those disagree, they win. This file exists to explain *why* the harness is shaped this way; the phases, contracts, and rubrics themselves live in the skills and are not repeated here in full.
+**The source of truth is `.claude/agents/` and `.claude/skills/`.** Where this document and those disagree, they win. This file exists to explain *why* ETF Research Agent is shaped this way; the phases, contracts, and rubrics themselves live in the skills and are not repeated here in full.
 
 ## What it reproduces
 
 An experienced ETF investor's process — market regime → favoured sectors → themes within a sector → three core themes → ETF candidates → three-axis verification → four-state classification — rebuilt as an agent pipeline. The user does not have to name a fund. And the result is not a recommendation: it hands over candidates **with the evidence and the risks, so the investor can judge**.
 
-## Two modes
+## Entry points and analysis depth
+
+A named ticker goes to `etf-signal-scoring`. Discovery without a named fund starts
+with a scan: phases 0–3, one candidate-finder per sector, the structure gate, and
+current-state scoring. It emits judgment blocks, not the full report set.
+When full evidence is requested, the shared phases continue through the stages below.
 
 **Discovery (phases 2–7)** narrows top-down from the market regime.
 Market diagnosis → sectors graded on six criteria (3–5 selected) → 10 themes per sector → shortlist (3 per sector) → an evidence pack per theme → three core themes → 3–5 ETF candidates per theme. Output: 9–15 candidate ETFs, plus the basis and the rejection reasons at every step.
@@ -31,11 +36,17 @@ Market diagnosis → sectors graded on six criteria (3–5 selected) → 10 them
 
 **Why a pattern must be backtested before it is cited.** Several patterns that read convincingly on a handful of charts lost to a random-day baseline over 1,255 sessions. `tools/validate.py` is the gate; see [METHODOLOGY.md](METHODOLOGY.md) for the ones that were dropped.
 
-**Why the renderer is a script, not an agent** (changed in v1.4). The renderer copies payload values and computes nothing, so the same payload always yields the same bytes. A renderer that cannot invent a value cannot distort one, which leaves nothing to review — review ends at the payload. The previous html-mock-renderer and ui-render-qa agents, and the 93KB design-tool mock they existed to clean up, were removed; the script that had actually been generating the HTML became `tools/render.py`.
+**Why the renderer is a script, not an agent** (changed in v1.4). The renderer copies
+research values and computes layout deterministically. This avoids new model judgment,
+but display bugs can still omit or mislabel data. Mechanical HTML checks and a visual
+comparison against the payload remain necessary after rendering changes. The former
+HTML rendering agents were replaced by `tools/render.py`.
 
 ## Agents
 
-Execution mode: **subagents, pipeline plus fan-out.** Data moves between stages through a strict file contract, which makes the pipeline deterministic; and because the scorers are forbidden from referencing each other, peer-to-peer communication would cause rule violations rather than prevent them. QA↔report is a generate-verify loop the orchestrator mediates.
+Execution mode: **subagents, pipeline plus fan-out.** Strict file contracts make data
+flow inspectable; web research and model judgment are not deterministic. Scorers
+may not reference each other's outputs. The orchestrator mediates the QA/report loop.
 
 | # | Agent | Definition |
 |---|---|---|
@@ -71,7 +82,11 @@ Fully defined in `.claude/skills/etf-discovery-orchestrator/references/data-cont
 
 Per-domain rankings live in `etf-evidence-standards/references/source-priority.md`. In short: exchanges, issuers, and filings are primary; Morningstar, ETF.com, and data vendors are secondary; general portals and news are tertiary (events and supporting context only); blogs and forums are unusable. Issuer daily holdings always win for holdings. A single news item never supports a theme-structure grade.
 
-Financials, valuation, and US ETF holdings go to FMP's structured JSON before web search when `FMP_API_KEY` is set; quotes, candles, and Korean investor flows go to the Toss Securities Open API first. Both are secondary-tier vendors — an official filing, exchange, or issuer source outranks them. Without keys the harness falls back to official web sources. **Key values never appear in the repository, logs, or output.** See [API_SETUP.md](API_SETUP.md).
+The agent source policy prefers structured vendor data where available, with
+official filings, exchanges, and issuers taking precedence for conflicting facts.
+FMP and Toss are secondary-tier sources. Web research can fill agent evidence gaps;
+the scoring/backtesting CLIs call FMP directly and have no web or Toss fallback.
+**Key values must never appear in repository files, logs, or output.** See [API_SETUP.md](API_SETUP.md).
 
 **Six rules for source conflicts**: ① primary wins ② within a tier, the later as-of date wins ③ issuer daily holdings win for holdings ④ conflicting figures are recorded in `source_conflicts`, never deleted ⑤ a conflict touching a headline grade lowers its confidence ⑥ the conflict is stated in the prose, not hidden.
 
@@ -86,7 +101,7 @@ Financials, valuation, and US ETF holdings go to FMP's structured JSON before we
 
 Twenty top-level keys (full schema in section 5 of data-contracts.md): `meta`, `market_regime`, `sector_scores`, `theme_candidates`, `theme_evidence`, `selected_themes`, `etf_candidates`, `value_chain_mapping`, `theme_structure_scores`, `financial_scores`, `valuation_scores`, `decision_gate_result`, `etf_structure_trading_gate`, `source_quality_policy`, `investment_judgment_readiness`, `investor_fit_required`, `pilot_acceptance_summary`, `data_coverage`, `explanation`, `sources`.
 
-Upstream payloads go in unmodified so the trace to the original survives. **analysis.json is the extension point**: a WebView, an image card, or an MTS widget consumes this file and picks the keys it needs — no change to the harness required.
+Upstream payloads go in unmodified so the trace to the original survives. **analysis.json is the extension point**: a WebView, an image card, or an MTS widget consumes this file and picks the keys it needs — no change to ETF Research Agent required.
 
 ## Failure handling
 

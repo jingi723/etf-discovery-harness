@@ -2,7 +2,7 @@
 
 ## Reporting a vulnerability
 
-Open a [private security advisory](https://github.com/jingi723/etf-discovery-harness/security/advisories/new)
+Open a [private security advisory](https://github.com/jingi723/etf-research-agent/security/advisories/new)
 rather than a public issue. Please do not include live credentials in the report.
 
 ## Credentials
@@ -40,7 +40,7 @@ invalidate each other mid-run. `tools/data.py` caches the token to disk
 (`TOSS_TOKEN_CACHE`, default `/tmp/.toss_token.json`) and re-issues only on expiry. On
 a shared machine, point that path somewhere only you can read.
 
-**The order and account endpoints are never called.** This harness is read-only against
+**The order and account endpoints are never called.** ETF Research Agent is read-only against
 market data and holds no trading authority. Keep it that way — a PR that adds order
 placement will be declined.
 

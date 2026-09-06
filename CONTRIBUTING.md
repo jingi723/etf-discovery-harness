@@ -39,7 +39,7 @@ is worth more than one asserted to work.
 - New runtime dependencies. `tools/` is standard library only, and staying that way is
   most of why it is easy to run.
 - Indicators that cannot be computed from an available source. If the data is not
-  obtainable, the harness records a coverage gap — it does not estimate.
+  obtainable, ETF Research Agent records a coverage gap — it does not estimate.
 
 Open PRs against `main`, which is the English branch. `ko` is the Korean working branch
 and the upstream source; it is translated onto `main` periodically, so a change landing
@@ -50,6 +50,7 @@ on `main` may be re-stated there rather than merged.
 ```bash
 python3 tools/validate.py --self-check     # must print "ok"
 python3 tools/score.py --self-check        # must print "ok"
+python3 tools/check_workspace.py --self-check  # must print "ok"
 python3 -m compileall -q tools .claude/skills
 python3 .claude/skills/etf-ui-render/scripts/check_html.py examples
 ```

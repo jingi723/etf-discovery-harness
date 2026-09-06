@@ -26,7 +26,7 @@ def check(path):
     name = path.name
     try:
         d = json.loads(path.read_text())
-    except json.JSONDecodeError as e:
+    except (OSError, ValueError) as e:
         yield f"{name}: unparseable — {e}"
         return
 
@@ -35,12 +35,18 @@ def check(path):
     is_agent_output = name[:2].isdigit() and "_" in name and not name.startswith("12b")
     if not is_agent_output:
         return
+    if not isinstance(d, dict):
+        yield f"{name}: agent artifact must be a JSON object"
+        return
     for k in ENVELOPE:
         if k not in d:
             yield f"{name}: envelope missing '{k}'"
     if not d.get("sources"):
         yield f"{name}: sources is empty — the contract calls that invalid"
     p = d.get("payload") or {}
+    if not isinstance(p, dict):
+        yield f"{name}: payload must be a JSON object"
+        return
 
     # 07 value chain: chain weights plus unclassified must close on 100
     if name.startswith("07_"):
@@ -78,6 +84,8 @@ def main():
     a = ap.parse_args()
     root = Path(a.path)
     files = sorted(root.glob("*.json")) if root.is_dir() else [root]
+    if not files:
+        ap.error(f"no JSON artifacts found in {root}")
     fails = [f for p in files for f in check(p)]
     for f in fails:
         print(f"  FAIL {f}")

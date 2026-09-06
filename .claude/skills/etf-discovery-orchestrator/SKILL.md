@@ -1,6 +1,6 @@
 ---
 name: etf-discovery-orchestrator
-description: "Orchestrator for the ETF discovery agent harness. Runs the 'sector → theme → ETF candidates → verification' pipeline to surface candidates and produce the final reports (4 in pilot scope, 5 in full), the mobile WebView UI, and one-off PDF / summary PNG / editable DOCX exports. Use this skill when the user has NOT named a fund — finding ETFs worth reviewing, analysing sectors or themes, diagnosing the market regime, or producing a candidate report from scratch. If the request names a ticker ('analyse LIT', 'how does SOXX look', 'compare SMH and SOXX'), the target is already chosen and etf-signal-scoring handles it instead — this pipeline starts from the whole market and may never reach the named fund. Also use it for follow-ups — re-running the analysis, updating it, re-running one stage only (themes again, reports again, re-verify one ETF, UI or PDF/image/Word only), improving or correcting a previous result, regenerating reports, and creating or modifying UI/HTML/WebView/PDF/PNG/DOCX output."
+description: "Orchestrator for the ETF Research Agent. Runs the 'sector → theme → ETF candidates → verification' pipeline to surface candidates and produce the final reports (4 in pilot scope, 5 in full), the mobile WebView UI, and one-off PDF / summary PNG / editable DOCX exports. Use this skill when the user has NOT named a fund — finding ETFs worth reviewing, analysing sectors or themes, diagnosing the market regime, or producing a candidate report from scratch. If the request names a ticker ('analyse LIT', 'how does SOXX look', 'compare SMH and SOXX'), the target is already chosen and etf-signal-scoring handles it instead — this pipeline starts from the whole market and may never reach the named fund. Also use it for follow-ups — re-running the analysis, updating it, re-running one stage only (themes again, reports again, re-verify one ETF, UI or PDF/image/Word only), improving or correcting a previous result, regenerating reports, and creating or modifying UI/HTML/WebView/PDF/PNG/DOCX output."
 ---
 
 # ETF Discovery Orchestrator
@@ -20,10 +20,10 @@ Phases 0–3 are shared. **After sector selection the run forks**, and the fork 
 | | Scan (default) | Full |
 |---|---|---|
 | After Phase 3 | Phase S: representative ETFs per sector → Phase 11.5 scoring → judgment blocks | Phases 4–14: themes, evidence, candidates, value chains, three axes, gate, reports |
-| Agents | 3 | ~60 |
+| Agent calls from cold | 2 + selected sector count (5–7 for 3–5 sectors) | ~60, depending on scope |
 | Cost | ~170k tokens reusing a same-day regime, ~360k from cold; ~10 network requests per fund | 6–7M tokens |
 | Output | one judgment block per fund, ranked | five reports, analysis.json, UI, PDF |
-| Misses | theme purity — a fund that is 55% outside its own theme looks fine here | nothing, at that price |
+| Limits | theme purity, holdings-level financials and valuation | source coverage, stale data, and model judgment still limit confidence |
 
 **Choosing the depth:**
 
@@ -39,7 +39,10 @@ Run the full pipeline when depth, evidence, or reports are asked for, or when a 
 
 ## Execution mode: subagents (pipeline + fan-out)
 
-Chosen because data flows between stages through a strict file contract (`references/data-contracts.md`), making this a deterministic pipeline; and because the three scoring axes are forbidden from referencing each other (axis independence), so peer-to-peer communication would actively cause rule violations. QA↔report is a generate-verify loop the orchestrator mediates. Specify `model: "opus"` on every Agent call.
+Data flows between stages through a strict file contract (`references/data-contracts.md`),
+making dependencies inspectable; research and model judgment can still vary.
+The three scoring axes may not reference each other's outputs. The orchestrator
+mediates the QA/report loop. Specify `model: "opus"` on every Agent call.
 
 ## Agents
 
@@ -77,7 +80,10 @@ Chosen because data flows between stages through a strict file contract (`refere
 ### Phase 1: setup + data coverage pre-check
 
 1. Write `_workspace/00_input/run_config.json` per the schema in data-contracts. When the user has not specified a scope, use the MVP defaults: `sectors_scope` = [information technology, industrials, healthcare, energy & power, communications], `max_etf_per_theme`=5, `deep_score_etf_per_theme`=3, `selected_themes_count`=3, and **`output_scope` = "pilot" on a first run** (4 outputs — `etf_candidates.md` folded into `final_etf_decision.md`), "full" afterwards. `delivery_formats` defaults to `["pdf"]`; add html for interactive browsing, png for a short shareable image, docx for later editing. Put the provisional defaults from data-contracts into `structure_gate_thresholds` (minimums for AUM, turnover, spread, premium/discount, listing age) and tune them after the MVP run. Fix the `slug_map` here.
-**On the scan path**, write run_config with `output_scope: "scan"` and skip step 2 — a three-agent run cannot spend a phase probing sources, and `tools/score.py` fails loudly if the data is not there. Fill `sectors_scope`, `market_scope` and `structure_gate_thresholds`; the theme and deep-score parameters do not apply.
+**On the scan path**, write run_config with `output_scope: "scan"` and skip step 2.
+Record failures and coverage gaps as they occur; `tools/score.py` fails when its data
+is unavailable. Fill `sectors_scope`, `market_scope` and `structure_gate_thresholds`;
+the theme and deep-score parameters do not apply.
 
 2. **Coverage pre-check** → `_workspace/00_coverage_precheck.md`: make one sample query against each major data source (macro indicators, KR/US ETF information, holdings, financial and price data) and record whether it is reachable. If a core source is blocked, tell the user and settle whether to narrow scope (KR only, say) before continuing. This becomes the "pre-check" section of the final `data_coverage.md`.
 
@@ -99,7 +105,10 @@ Emit one judgment block per fund, per `etf-signal-scoring`, best first on the ho
 
 **When two funds tie, say so — do not manufacture an order.** A tie means they occupy the same signal state, and subdividing bands until they differ is fitting noise. Name what the scan does not measure that would separate them, and offer the full pipeline if it matters. A 2026-09-06 scan tied XLE and XOP on all seven indicators; their inputs agreed in direction and magnitude on every one, and what actually separates them is structure — XLE is 35% two mega-caps, XOP is 51 names near-equally weighted — which Phase 8's value-chain mapping would show and this path does not. Close with one line naming what the scan did not check: theme purity, holdings-level financials, and valuation beyond the sub-sector band.
 
-Verdicts still come from the four states, reached from less evidence — so a scan lands on "conditional" and "on hold" more often, and says why. Copy `_workspace/` outputs to `output/{run_date}/` and report the token total from `agent_costs.json`.
+Verdicts still follow the compliance skill's gates. Missing required axis evidence
+means "on hold"; signal scores do not substitute for those grades. Do not assign
+"worth reviewing" on a scan without the evidence its gate requires. Copy
+`_workspace/` outputs to `output/{run_date}/` and report the token total from `agent_costs.json`.
 
 To deepen a scan afterwards, continue from Phase 4 against the same workspace; Phases 2–3 and any candidates already found are reused.
 
@@ -154,9 +163,12 @@ python3 tools/score.py {ticker} --horizon long  --macro {N} --holdings
 python3 tools/score.py {ticker} --horizon swing --macro {N}
 ```
 
-Take `--macro` from `01_market_regime.json` using the band in `etf-signal-scoring`; the regime is already established, so do not re-derive it. Run this for finalists only, and write `_workspace/12b_signal_scores.json` as `{ticker: {long, swing, short, breadth, macro_used, as_of}}`.
+Take `--macro` from `01_market_regime.json` using the band in `etf-signal-scoring`; the regime is already established, so do not re-derive it. Run this for full-pipeline finalists or scan candidates that clear the structure gate. Write `_workspace/12b_signal_scores.json` as `{ticker: {long, swing, short, breadth, macro_used, as_of}}`; use null for an uncomputed horizon, never infer it from another. If FMP access is unavailable, record the missing score and reason rather than substituting a number.
 
-Costs about 15 API calls per finalist and no agent tokens, so it is worth running even when the pipeline is otherwise scoped down.
+The two separate CLI commands above make up to 18 provider calls per fund (15 with
+holdings, plus 3 without); the first command can reuse one benchmark response within
+its process. Cache entries do not survive between CLI invocations. The scripts use
+no model tokens; orchestration and interpretation still do.
 
 **This does not feed the Decision Gate.** The four states describe the product, not the moment — keeping the signal score out of the gate is what preserves that distinction. It is reported alongside, so a reader sees both "this product holds up" and "its constituents are broadly below their averages right now".
 
@@ -178,7 +190,10 @@ Runs after research QA passes. **This layer creates no new research judgment** �
    python3 tools/render.py _workspace/15_ui/ui_payload.json -o _workspace/15_ui/html/
    python3 .claude/skills/etf-ui-render/scripts/check_html.py _workspace/15_ui/html/ --payload _workspace/15_ui/ui_payload.json
    ```
-   If `total_issues` is not 0, fix the payload or `tools/render.py` and re-run. The renderer copies payload values verbatim, so it cannot distort a grade or a sentence — the same payload always yields the same bytes.
+   Save the check output to `_workspace/16_ui_render_qa.json`. If the command fails
+   or `total_issues` is not 0, fix the input or renderer and re-run. `--payload`
+   checks JSON syntax, not value correspondence. Compare rendered headline grades,
+   verdicts, and coverage with the payload; deterministic output can still have bugs.
 3. **13.5c**: run `.claude/skills/etf-ui-render/scripts/export_report.py` per `delivery_formats`. PNG uses `discovery_index.html` as its source. If `--check` shows a required local tool is missing, do not fake the format — preserve the HTML and state the omission and its reason in the completion report.
 
 Partial re-runs: "UI again" starts at 13.5a (reusing upstream output), "HTML only" runs 13.5b, "PDF/image only" runs 13.5c against the existing HTML.
@@ -211,8 +226,13 @@ Every call prompt must include: (1) an instruction to follow the agent's own def
 
 ## Test scenarios
 
-### Normal path
-1. User: "Find ETF candidates worth reviewing in the current market" → Phase 0 (first run) → Phase 1 (run_config + pre-check)
+### Default scan path
+1. User: "Find ETF candidates worth reviewing in the current market" → phases 0–3 with `output_scope=scan` (no coverage pre-check).
+2. Phase S: one candidate-finder per selected sector, then structure gate and Phase 11.5.
+3. Phase S-end: judgment blocks and recorded gaps; no 05 theme file, reports, or UI required.
+
+### Full analysis path
+1. User: "Find ETF candidates and produce the full evidence reports" → Phase 0 (first run) → Phase 1 (run_config + pre-check, `output_scope=pilot`)
 2. Phases 2–3: market regime → 3–5 sectors selected
 3. Phases 4–6: 10 themes per sector → shortlist → evidence → 3 core themes
 4. Phases 7–9: 3–5 ETFs per theme → value-chain mapping → deep three-axis scoring on 3 per theme

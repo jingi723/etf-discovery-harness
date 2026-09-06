@@ -26,6 +26,8 @@ jobs:
         run: python tools/validate.py --self-check
       - name: Scoring self-check
         run: python tools/score.py --self-check
+      - name: Workspace contract self-check
+        run: python tools/check_workspace.py --self-check
       - name: Validate sample HTML
         run: python .claude/skills/etf-ui-render/scripts/check_html.py examples
       - name: Check CLI entry points

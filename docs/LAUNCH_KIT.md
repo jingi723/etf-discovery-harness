@@ -23,11 +23,11 @@ or star count. Add these through the repository's About settings using
 
 ## Korean community draft
 
-Title: ETF 분석 AI가 모르는 것도 기록하게 만들었습니다 — Claude Code 리서치 하네스
+Title: ETF 분석 AI가 모르는 것도 기록하게 만들었습니다 — Claude Code 리서치 에이전트
 
 ETF 분석에서 결론보다 확인하기 어려웠던 건 그 결론의 근거와 빠진 데이터였습니다.
 그래서 시장 → 섹터 → 테마 → ETF 후보를 좁혀 가면서, 찬반 근거와 구성종목 등급,
-자료를 구하지 못한 항목까지 남기는 오픈소스 하네스를 만들었습니다.
+자료를 구하지 못한 항목까지 남기는 오픈소스 리서치 에이전트를 만들었습니다.
 
 Claude Code 에이전트 15개가 조사를 나누고, Python 표준 라이브러리 도구가
 계산과 패턴 백테스트를 담당합니다. 테마·재무·밸류에이션은 별도로 평가합니다.
@@ -41,13 +41,13 @@ API 키 없이 열어 볼 수 있는 과거 실행 보고서와 구성종목 맵
 어떤 근거가 더 있어야 분석을 신뢰할 수 있을지, 첫 실행에서 어디가 막히는지
 피드백을 받고 싶습니다.
 
-https://github.com/jingi723/etf-discovery-harness
+https://github.com/jingi723/etf-research-agent
 
 ## English community draft
 
 Title: Show HN: ETF research with explicit evidence gaps and holdings-level grades
 
-I built a Claude Code harness to make ETF research easier to inspect: supporting
+I built ETF Research Agent for Claude Code to make ETF research easier to inspect: supporting
 and negative evidence, separate theme/financial/valuation grades, and a report of
 what data could not be obtained.
 
@@ -61,7 +61,7 @@ deepened into the full evidence pipeline; measured run costs are documented.
 This produces research notes, not trade recommendations. I would appreciate
 feedback on the evidence trail, onboarding, and how to make missing data clearer.
 
-https://github.com/jingi723/etf-discovery-harness
+https://github.com/jingi723/etf-research-agent
 
 ## 30–45 second demo recording outline
 

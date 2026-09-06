@@ -5,7 +5,7 @@ description: "Standard for scoring one already-chosen stock or ETF across 7 indi
 
 # Signal Scoring (7 indicators × 3 horizons)
 
-The discovery harness answers *what should I look at*. This skill answers **what state is this already-chosen target in**. Daily judgments, position checks, and head-to-head comparisons all live here.
+ETF Research Agent's discovery workflow answers *what should I look at*. This skill answers **what state is this already-chosen target in**. Daily judgments, position checks, and head-to-head comparisons all live here.
 
 The discovery pipeline also calls it, at Phase 11.5, to put a current-state score next to each finalist's three structural grades — the axes say whether a product is sound, not whether now is a reasonable moment. It costs about 15 API calls per ETF and no agent tokens.
 

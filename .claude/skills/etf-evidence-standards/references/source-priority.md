@@ -26,7 +26,7 @@ For quotes, volume, candles, investor-type trading, short-selling / margin / len
 
 - Symbol format: KR `005930`, US `AAPL` / `SOXL` — different from FMP's `.KS` suffix convention.
 - Flow endpoints (investor-trading and friends) are KR-only; US symbols return 400 `unsupported-market`. Same-day figures are provisional while the market is open, so retail and institutional sub-breakdowns can be `null` until the evening settlement.
-- **Not provided**: financial statements, valuation multiples, ETF holdings, company profiles → use FMP (below). Order and account APIs also exist, but **this harness never calls them.**
+- **Not provided**: financial statements, valuation multiples, ETF holdings, company profiles → use FMP (below). Order and account APIs also exist, but **ETF Research Agent never calls them.**
 - Record as: `source_name` "Toss Securities Open API", `source_type` "broker", `reliability_tier` "secondary" (exchange-data relay), `as_of_date` from the response's timestamp/date field.
 
 ## Registered API ②: FMP (Financial Modeling Prep)

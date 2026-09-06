@@ -1,6 +1,6 @@
 ---
 name: etf-report-templates
-description: "Templates for the ETF discovery harness's final outputs (sector_theme_discovery.md, etf_candidates.md, final_etf_decision.md, analysis.json, data_coverage.md). Use this skill whenever generating final reports, regenerating them, adjusting report format, writing the judgment-readiness section, or producing the reduced pilot output set."
+description: "Templates for the ETF Research Agent's final outputs (sector_theme_discovery.md, etf_candidates.md, final_etf_decision.md, analysis.json, data_coverage.md). Use this skill whenever generating final reports, regenerating them, adjusting report format, writing the judgment-readiness section, or producing the reduced pilot output set."
 ---
 
 # Report Templates
@@ -102,7 +102,7 @@ Follow this section order exactly:
 - Hold pending the missing data / run a fit review against your own constraints (Investor Fit — a later addition)
 
 ### Why this is not a recommendation to buy
-This harness evaluates only whether the product itself belongs on a review list. It does not incorporate the circumstances an actual decision requires — horizon, amount, loss tolerance, existing portfolio.
+ETF Research Agent evaluates only whether the product itself belongs on a review list. It does not incorporate the circumstances an actual decision requires — horizon, amount, loss tolerance, existing portfolio.
 
 > This is reference material for assessing an ETF candidate's structure and risks. Whether to act on it depends on your holding period, position size, loss tolerance, and existing portfolio.
 ```

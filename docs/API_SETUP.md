@@ -11,11 +11,13 @@ parsed out of rendered HTML, and every response carries an explicit as-of date, 
 is what the sourcing rules require. It also cuts context usage substantially — one
 `ratios-ttm` call replaces several search results and a long page read.
 
-Two providers are supported, and they do not overlap:
+Two providers are available through separate functions in `tools/data.py`.
+The agent's source-selection policy is below; this is not automatic CLI failover:
 
 | Data | Provider |
 |---|---|
-| Quotes, candles, order book | Toss (if configured), otherwise FMP |
+| Quotes and candles | Agent workflow: Toss when configured, otherwise FMP; Python scoring/backtesting: FMP |
+| Order book | Toss |
 | Korean investor-type flows, short selling, credit, securities lending | Toss only |
 | KOSPI/KOSDAQ indices, Korean treasury yields, KRW FX | Toss only |
 | Financial statements, TTM ratios, valuation multiples | FMP only |
@@ -27,8 +29,9 @@ Two providers are supported, and they do not overlap:
 cp .env.example .env
 ```
 
-Fill in whichever keys you have and leave the rest as the placeholder — the tools skip
-any provider whose key is still the placeholder value.
+Fill in the keys for the provider you will call. Unused providers may remain as
+placeholders. Calling a provider without valid credentials raises an error; the
+tools do not automatically skip it or switch providers.
 
 ```ini
 FMP_API_KEY=...
@@ -50,8 +53,9 @@ source. See [SECURITY.md](../SECURITY.md).
 
 ## Financial Modeling Prep
 
-Sign up at [financialmodelingprep.com](https://financialmodelingprep.com/). The free
-tier covers the endpoints below at a lower rate limit.
+Sign up at [financialmodelingprep.com](https://financialmodelingprep.com/). Endpoint
+availability and rate limits depend on your subscription; confirm access to the
+endpoints below before running live analysis.
 
 **Use the `stable` path.** The legacy `/api/v3/` routes are blocked on current keys.
 
@@ -139,7 +143,7 @@ comma-separated `symbols` parameter rather than looping.
 Same-day flow figures are provisional while the market is open — retail and
 institutional sub-breakdowns can be `null` until the evening settlement.
 
-Toss also exposes order and account APIs. **This harness never calls them.**
+Toss also exposes order and account APIs. **ETF Research Agent never calls them.**
 
 ## How sources are ranked
 

@@ -3,12 +3,14 @@
 
 Checks: banned phrases, duplicate ids, tag balance
 (by parsing), unresolved {{ }}, external network resources, bundler UUID
-residue, and — with --payload — that the grade strings actually appear.
+residue. With --payload, also checks that the input is valid JSON.
+It does not prove that HTML values match their source; compare those separately.
 
     python3 check_html.py <html file or directory> [--payload ui_payload.json]
 
 Exit code 0 when clean, 1 when anything is found.
 """
+import argparse
 import json
 import os
 import re
@@ -59,12 +61,17 @@ class Checker(HTMLParser):
         else:
             self.errors.append(f"unmatched closing tag: </{tag}>")
 
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
+        if tag not in VOID:
+            self.handle_endtag(tag)
+
 
 def check_file(path, payload_text):
     issues = []
     text = open(path, encoding="utf-8").read()
     for s in FORBIDDEN:
-        if s in text:
+        if s.casefold() in text.casefold():
             issues.append({"type": "forbidden_phrase", "value": s})
     for m in re.finditer(r"\{\{[^}]*\}\}", text):
         issues.append({"type": "unresolved_placeholder", "value": m.group(0)[:60]})
@@ -76,6 +83,7 @@ def check_file(path, payload_text):
     try:
         c.feed(text)
         c.close()
+        c.errors.extend(f"unclosed tag: <{tag}>" for tag in reversed(c.stack))
     except Exception as e:
         issues.append({"type": "parse_error", "value": str(e)[:100]})
     for i, n in c.ids.items():
@@ -87,21 +95,34 @@ def check_file(path, payload_text):
 
 
 def main():
-    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("targets", nargs="+")
+    parser.add_argument("--payload", help="also validate this payload's JSON syntax")
+    args = parser.parse_args()
     payload_text = None
-    if "--payload" in sys.argv:
-        payload_text = open(sys.argv[sys.argv.index("--payload") + 1], encoding="utf-8").read()
+    if args.payload:
+        try:
+            with open(args.payload, encoding="utf-8") as f:
+                payload_text = f.read()
+            json.loads(payload_text)
+        except (OSError, ValueError) as error:
+            parser.error(f"invalid payload: {error}")
     results, total = {}, 0
-    for target in args:
+    for target in args.targets:
         files = []
         if os.path.isdir(target):
             files = [os.path.join(target, f) for f in sorted(os.listdir(target))
                      if f.endswith(".html")]
-        elif target.endswith(".html"):
+        elif os.path.isfile(target) and target.endswith(".html"):
             files = [target]
+        if not files:
+            parser.error(f"no HTML files found at {target}")
         for f in files:
-            issues = check_file(f, payload_text)
-            results[os.path.basename(f)] = issues
+            try:
+                issues = check_file(f, payload_text)
+            except OSError as error:
+                parser.error(str(error))
+            results[f] = issues
             total += len(issues)
     print(json.dumps({"total_issues": total, "files": results},
                      ensure_ascii=False, indent=2))

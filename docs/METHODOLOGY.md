@@ -2,7 +2,7 @@
 
 This is the actual procedure, in order, with the mistakes that shaped each step. It
 covers the single-ticker path (`etf-signal-scoring`). The multi-agent discovery
-pipeline is in [HARNESS_DESIGN.md](HARNESS_DESIGN.md).
+pipeline is in [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ---
 
@@ -208,7 +208,7 @@ does: growth below 0% is weak, 0–5% is modest. Anchoring that boundary is what
 judgement call back into a rule.
 
 **Read grades at the level they were measured.** A single holding's grade carries about
-a notch of noise. The ETF-level grade, which is what the harness actually reports, does
+a notch of noise. The ETF-level grade, which is what ETF Research Agent actually reports, does
 not.
 
 ## A known limitation: purity is a weak filter

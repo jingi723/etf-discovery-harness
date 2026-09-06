@@ -43,7 +43,7 @@ Any theme whose evidence pack carries `verification_status: "insufficiently veri
 
 ## Procedure
 1. For every theme with an evidence pack, first record which of the 8 minimum conditions it meets, then grade the 7 criteria and rank with `weighted_grade.py` (equal weights). **Do no new searching** — use the input files only.
-2. Select the top 3 among themes meeting the minimum (2+). A theme graded C or below on ETF investability cannot be selected regardless of rank — this is an ETF harness.
+2. Select the top 3 among themes meeting the minimum (2+). A theme graded C or below on ETF investability cannot be selected regardless of rank — this is an ETF research system.
 3. For each selected theme output all 8 items: ① why it was chosen ② which data supports it ③ which data is missing ④ what the risks are ⑤ why it ranks above the rejected themes ⑥ which ETF candidates it leads to ⑦ data confidence ⑧ ETF investability. Include one main point, 2–3 supporting points, and at least 2 risk points.
 4. Record a reason for **every** rejected theme as **category + specific reason**. "Scored low" is not a reason. Categories: insufficient data / too few ETF candidates / valuation premium too high / weak link to earnings / demand or bottleneck structure unclear / excessive risk / hard to explain / theme too broad or vague / no ETF holds the theme purely.
 

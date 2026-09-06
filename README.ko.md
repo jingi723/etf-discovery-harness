@@ -1,19 +1,21 @@
-# ETF Discovery Harness
+# ETF Research Agent
+
+근거, 구성종목 분석, 데이터 누락까지 기록하는 ETF 리서치 에이전트.
 
 [English](README.md) · 한국어
 
-[![Checks](https://github.com/jingi723/etf-discovery-harness/actions/workflows/checks.yml/badge.svg)](https://github.com/jingi723/etf-discovery-harness/actions/workflows/checks.yml)
+[![Checks](https://github.com/jingi723/etf-research-agent/actions/workflows/checks.yml/badge.svg)](https://github.com/jingi723/etf-research-agent/actions/workflows/checks.yml)
 [![MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
 
 **ETF 분석의 결론뿐 아니라, 근거와 모르는 것까지 확인하세요.**
 
-Claude Code용 ETF 리서치 하네스입니다. 15개 에이전트가
+Claude Code용 ETF 리서치 에이전트입니다. 15개 에이전트가
 **시장 → 섹터 → 테마 → ETF 후보 → 검증**을 수행하고, Python 도구가
 지표 계산과 패턴 백테스트를 담당합니다.
 
 [샘플 실행](#바로-체험하기) · [최종 판단 보고서](examples/final_etf_decision.md) ·
-[데이터 누락 보고서](examples/data_coverage.md) · [설계 문서](docs/HARNESS_DESIGN.md)
+[데이터 누락 보고서](examples/data_coverage.md) · [설계 문서](docs/ARCHITECTURE.md)
 
 ![실제 샘플의 구성종목 맵. 면적은 보유 비중, 색은 재무 등급을 나타냅니다.](docs/images/holdings-heatmap.png)
 
@@ -31,8 +33,8 @@ ETF 내부의 구성종목을 비중과 등급으로 살펴보고, 테마·재�
 Git과 Python 3.9 이상만 있으면 됩니다. 샘플 확인에는 API 키나 Claude Code가 필요 없습니다.
 
 ```bash
-git clone https://github.com/jingi723/etf-discovery-harness.git
-cd etf-discovery-harness
+git clone https://github.com/jingi723/etf-research-agent.git
+cd etf-research-agent
 python3 -m http.server 8000 --bind 127.0.0.1 --directory examples
 ```
 

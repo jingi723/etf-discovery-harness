@@ -1,6 +1,6 @@
 ---
 name: etf-grading-standards
-description: "Grading standards for the ETF analysis harness. Use this skill for every grade computed (A+ through D) — sector scores, theme structure, financial condition, valuation. Triggers on any scoring task needing weighted-average grades, grade-to-number mapping, coverage-based grade suspension, sub-sector valuation bands, macro sign flips by sector, bottom-detection methodology, or separating score computation from explanation."
+description: "Grading standards for the ETF Research Agent. Use this skill for every grade computed (A+ through D) — sector scores, theme structure, financial condition, valuation. Triggers on any scoring task needing weighted-average grades, grade-to-number mapping, coverage-based grade suspension, sub-sector valuation bands, macro sign flips by sector, bottom-detection methodology, or separating score computation from explanation."
 ---
 
 # Grading Standards

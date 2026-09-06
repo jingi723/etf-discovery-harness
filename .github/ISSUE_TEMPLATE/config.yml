@@ -1,5 +1,5 @@
 blank_issues_enabled: true
 contact_links:
   - name: Security reporting
-    url: https://github.com/jingi723/etf-discovery-harness/blob/HEAD/SECURITY.md
+    url: https://github.com/jingi723/etf-research-agent/blob/HEAD/SECURITY.md
     about: Follow the security policy for exposed credentials or vulnerabilities.

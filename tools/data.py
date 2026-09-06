@@ -1,12 +1,12 @@
 """Market data providers.
 
-Two optional backends, selected by which env vars are present:
+Two backends, chosen explicitly by the caller and authenticated by environment:
 
   FMP_API_KEY                         -> Financial Modeling Prep (global)
   TOSS_CLIENT_ID / TOSS_CLIENT_SECRET -> Toss Securities Open API (KR flows)
 
-FMP alone is enough for everything except Korean investor-flow and
-short-selling data, which only Toss provides.
+Scoring and backtesting call FMP directly; there is no automatic provider failover.
+Korean investor-flow and short-selling helpers call Toss.
 """
 from __future__ import annotations
 

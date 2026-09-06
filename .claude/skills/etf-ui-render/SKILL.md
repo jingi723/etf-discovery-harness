@@ -41,7 +41,9 @@ python3 {this skill directory}/scripts/check_html.py _workspace/15_ui/html/ --pa
 
 **No agent hand-writes the HTML.** Two reasons:
 1. A response tens of thousands of characters long loses the whole task to a dropped connection (this happened twice in the 2026-07-05 run).
-2. A renderer that cannot invent a value cannot distort one. The same payload always produces the same bytes, so there is nothing for a person or an agent to re-review — review ends at the payload.
+2. The same payload produces the same bytes, avoiding new model judgment. Display
+   bugs can still omit or mislabel values: after renderer changes, compare the
+   rendered headline grades, states, and coverage with the payload and inspect the layout.
 
 `check_html.py` mechanically checks for unresolved placeholders, banned phrases, tag balance, duplicate ids, and external resources. If it is not zero, fix the payload or `tools/render.py`.
 

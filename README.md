@@ -1,8 +1,10 @@
-# ETF Discovery Harness
+# ETF Research Agent
+
+ETF research with evidence, holdings analysis, and explicit data gaps.
 
 [English](README.md) · [한국어](README.ko.md)
 
-[![Checks](https://github.com/jingi723/etf-discovery-harness/actions/workflows/checks.yml/badge.svg)](https://github.com/jingi723/etf-discovery-harness/actions/workflows/checks.yml)
+[![Checks](https://github.com/jingi723/etf-research-agent/actions/workflows/checks.yml/badge.svg)](https://github.com/jingi723/etf-research-agent/actions/workflows/checks.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
 [![dependencies: none](https://img.shields.io/badge/dependencies-none-brightgreen.svg)](#the-tools)
@@ -10,12 +12,12 @@
 
 **Turn ETF research into evidence you can inspect.**
 
-A Claude Code research harness with 15 agents, holdings-level grades, and Python
+An ETF research system for Claude Code with 15 agents, holdings-level grades, and Python
 tools that test market patterns against a baseline. Follow the path from
 **market → sector → theme → ETF → evidence, risks, and missing data**.
 
 [Try the sample](#quick-start) · [Read a decision report](examples/final_etf_decision.md) ·
-[Inspect missing data](examples/data_coverage.md) · [How it works](docs/HARNESS_DESIGN.md)
+[Inspect missing data](examples/data_coverage.md) · [How it works](docs/ARCHITECTURE.md)
 
 <p align="center">
   <img src="docs/images/scan-scores.png" width="100%" alt="Scan output for one ETF: a one-month score of 49.5, then each of the seven indicators with its own colour, score and weight">
@@ -56,8 +58,8 @@ reports and [small contributions](CONTRIBUTING.md#good-first-contributions) help
 With Git and Python 3.9+ installed:
 
 ```bash
-git clone https://github.com/jingi723/etf-discovery-harness.git
-cd etf-discovery-harness
+git clone https://github.com/jingi723/etf-research-agent.git
+cd etf-research-agent
 python3 -m http.server 8000 --bind 127.0.0.1 --directory examples
 ```
 
@@ -108,7 +110,7 @@ see the [measured run costs](docs/RUN_COST.md) before choosing the depth.
 ## Why this exists
 
 Most LLM stock analysis has the same two failure modes. It asserts patterns it never
-tested, and it grades everything on one time horizon. This harness is built against
+tested, and it grades everything on one time horizon. ETF Research Agent is built against
 both:
 
 **Patterns must survive a backtest before they may be cited.** Real casualties from
@@ -126,7 +128,7 @@ Run these yourself — `tools/validate.py` is the script that killed them.
 **Two horizons disagreeing is information, not a bug.** The same two-day rally scored
 +7.5 on the one-month profile and −3.6 on the long-term profile, because the rally
 improved trend while it destroyed the entry point. A single blended score would have
-hidden that. The harness reports which indicator split them.
+hidden that. ETF Research Agent reports which indicator split them.
 
 Not ready to install? [`examples/`](examples/) holds one real run per depth — a
 [scan](examples/scan/scan_result.md) (two agents, ranked funds with per-indicator
@@ -217,8 +219,9 @@ PDF export. Deterministic: the same payload produces byte-identical HTML.
 python3 tools/render.py path/to/ui_payload.json -o ./html
 ```
 
-It copies payload values verbatim and computes nothing, which is why no agent reviews
-its output — a renderer that cannot invent a grade cannot misreport one. The treemap at
+It copies research values and computes the visual layout. Determinism does not rule
+out display bugs: check the generated HTML and compare headline values with the payload
+after renderer changes. The treemap at
 the top of this README came out of it; open
 [`examples/etf_SOXX.html`](examples/etf_SOXX.html) to click through the whole page.
 
@@ -238,7 +241,8 @@ python3 tools/render_scan.py _workspace/12b_signal_scores.json \
 
 ### `tools/data.py` — market data, two optional backends
 
-Selected automatically by which environment variables are set. Handles gzip, 429
+Provides separate FMP and Toss functions; callers choose the provider. The scoring
+and backtesting CLIs use FMP directly. Handles gzip, 429
 backoff, and disk-caches the Toss OAuth token (Toss issues **one valid token per
 client**, so a fresh token silently invalidates the one another process is holding).
 
@@ -275,7 +279,7 @@ for a log that survives across processes. A plain `score.py` run costs 3 calls; 
 │   ├── API_SETUP.md                    # FMP and Toss setup, coverage matrix
 │   ├── RUN_COST.md                     # measured tokens and API calls per run
 │   ├── METHODOLOGY.md                  # how a judgment is actually produced
-│   └── HARNESS_DESIGN.md               # architecture and data contracts
+│   └── ARCHITECTURE.md               # architecture and data contracts
 └── CLAUDE.md                           # trigger pointers and change log
 ```
 
@@ -292,7 +296,7 @@ Which path runs is decided by one question: **does the request name a fund?**
 
 ```text
 "how does SOXX look"          →  score it            3 API calls, 1 turn
-"what's worth a look"         →  scan               2-4 agents
+"what's worth a look"         →  scan               2 + one call per selected sector
 "...and I need the evidence"  →  full pipeline      ~60 agents
 ```
 
@@ -345,7 +349,7 @@ structural reason and a plain-language conclusion.
 The three grading axes are deliberately forbidden from reading each other. A great
 theme story must not quietly upgrade a stretched multiple.
 
-Details: [docs/HARNESS_DESIGN.md](docs/HARNESS_DESIGN.md). What it costs to run:
+Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). What it costs to run:
 [docs/RUN_COST.md](docs/RUN_COST.md) — measured across all ten agent types, plus the
 optimisations that were tried and did not work.
 
@@ -362,7 +366,7 @@ optimisations that were tried and did not work.
 - **Levels are quoted on the underlying index, never the leveraged vehicle.** Path
   dependency means the same index level maps to a different SOXL price every time.
 - **"Worth reviewing" is not a buy.** Position sizing, holding period and loss
-  tolerance are a separate step this harness does not perform.
+  tolerance are a separate step ETF Research Agent does not perform.
 
 ## Requirements
 

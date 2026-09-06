@@ -1,4 +1,4 @@
-# ETF Discovery Harness — Data Contracts
+# ETF Research Agent — Data Contracts
 
 The output contract every agent obeys. Each agent must read the section covering its own input and output and follow it exactly.
 
@@ -13,7 +13,9 @@ The output contract every agent obeys. Each agent must read the section covering
 
 ## 1. Common envelope
 
-Every JSON output is wrapped in this envelope. Only `payload` differs by stage.
+Every numbered agent research artifact is wrapped in this envelope. Only `payload`
+differs by stage. Run settings, `agent_costs.json`, `12b_signal_scores.json`, the
+assembled `analysis.json`, and UI payloads use their own contracts below.
 
 ```json
 {
@@ -74,13 +76,15 @@ _workspace/
 ├── 10_valuation_{etf_ticker}.json
 ├── 11_comparison.json
 ├── 12_decision.json
+├── 12b_signal_scores.json            # script results, no common envelope
+├── agent_costs.json                 # agent usage log, no common envelope
 ├── 13_reports/                       # draft final outputs (4 pilot / 5 full)
 ├── 14_qa_report.json
 ├── 15_ui/                            # UI conversion layer
 │   ├── ui_payload.json               # lightweight screen JSON (contract: etf-ui-render skill)
 │   ├── ui_payload_audit.md
 │   └── html/                         # discovery_index·etf_{ticker}·compare·report.html
-└── 16_ui_render_qa.json / .md
+└── 16_ui_render_qa.json              # saved check_html.py output
 ```
 
 The UI layer's detailed contract (required ui_payload fields, rendering rules, mechanical checks) lives in `.claude/skills/etf-ui-render/SKILL.md`. Final copy location: `output/{run_date}/ui/`.
@@ -99,7 +103,7 @@ Slug rule: short lowercase ASCII slugs (`AI semiconductors` → `ai-semi`, `info
   "selected_themes_count": 3,
   "max_etf_per_theme": 5,
   "deep_score_etf_per_theme": 3,
-  "output_scope": "pilot|full",
+  "output_scope": "scan|pilot|full",
   "delivery_formats": ["pdf"],
   "structure_gate_thresholds": {
     "min_aum": {"KR": "KRW 50B", "US": "USD 100M"},
@@ -113,7 +117,12 @@ Slug rule: short lowercase ASCII slugs (`AI semiconductors` → `ai-semi`, `info
 }
 ```
 
-`output_scope`: `pilot` reduces the final outputs to four (data_coverage, sector_theme_discovery, final_etf_decision, analysis.json) and folds etf_candidates.md into final_etf_decision.md's candidate-comparison section. `full` produces all five.
+`output_scope`: `scan` runs phases 0–3, S, 11.5, and S-end, producing judgment blocks
+and workspace artifacts without reports or UI exports. Its 06 files use sector
+slugs and contain `theme: null` plus `sector`; theme/deep-score settings do not apply.
+`pilot` reduces the final outputs to four (data_coverage, sector_theme_discovery,
+final_etf_decision, analysis.json) and folds etf_candidates.md into
+final_etf_decision.md's candidate-comparison section. `full` produces all five.
 
 `delivery_formats`: defaults to `["pdf"]`. PDF is the one-off report for reading and sharing, HTML is for interactive browsing, PNG is for sharing the `discovery_index` summary, and DOCX is only for when the user asks to edit the wording. HTML is generated regardless, since it is the source for the others. If an export tool is missing, preserve the HTML and state the omitted format and its requirement in the completion report.
 

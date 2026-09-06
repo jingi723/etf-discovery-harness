@@ -23,9 +23,10 @@ indicator — reported as a tie rather than split by an invented tiebreak.
 
 ## `full/` — the deep path (2026-07-05, Korean)
 
-What the ~60-agent pipeline produces. This run predates the harness's English
+What the full pipeline produces. This run predates ETF Research Agent's English
 translation, so its prose is Korean; it is kept because it is a real result rather than
-a reconstruction. The Korean harness lives on the `ko` branch.
+a reconstruction. The Korean version lives on the `ko` branch. New reports follow
+the request's language.
 
 | File | What it is |
 |---|---|
