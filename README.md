@@ -16,8 +16,8 @@ An ETF research system for Claude Code with 15 agents, holdings-level grades, an
 tools that test market patterns against a baseline. Follow the path from
 **market → sector → theme → ETF → evidence, risks, and missing data**.
 
-[Try the sample](#quick-start) · [Read a decision report](examples/final_etf_decision.md) ·
-[Inspect missing data](examples/data_coverage.md) · [How it works](docs/ARCHITECTURE.md)
+[Try the sample](#quick-start) · [Read a decision report](examples/full/final_etf_decision.md) ·
+[Inspect missing data](examples/full/data_coverage.md) · [How it works](docs/ARCHITECTURE.md)
 
 <p align="center">
   <img src="docs/images/scan-scores.png" width="100%" alt="Scan output for one ETF: a one-month score of 49.5, then each of the seven indicators with its own colour, score and weight">
@@ -37,7 +37,7 @@ tools that test market patterns against a baseline. Follow the path from
 <p align="center">
   <sub><b>What the full pipeline adds.</b> The same map, coloured by a graded financial
   assessment of each holding instead of a price signal — Micron at 8.16% carries an A+,
-  Intel at 6.17% a C−. Sixty agents rather than three. Both are real output; see
+  Intel at 6.17% a C−. This requires the deeper research pipeline. Both are real output; see
   <a href="examples/">examples/</a>.</sub>
 </p>
 
@@ -63,10 +63,11 @@ cd etf-research-agent
 python3 -m http.server 8000 --bind 127.0.0.1 --directory examples
 ```
 
-Open **http://127.0.0.1:8000/etf_SOXX.html** to explore the holdings map and grade
+Open **http://127.0.0.1:8000/full/etf_SOXX.html** to explore the holdings map and grade
 tables. Stop the server with `Ctrl+C`. You can also open the HTML file directly.
 This is one saved detail page; the full run's navigation pages are not bundled.
-The historical sample is in Korean. Prompts on `main` are English, and reports
+For the English scan, open **http://127.0.0.1:8000/scan/html/scan_SMH.html**.
+The full-analysis sample is in Korean. Prompts on `main` are English, and reports
 follow your request's language; [한국어 안내](README.ko.md).
 
 ### 2. Score a ticker — FMP key required
@@ -223,7 +224,7 @@ It copies research values and computes the visual layout. Determinism does not r
 out display bugs: check the generated HTML and compare headline values with the payload
 after renderer changes. The treemap at
 the top of this README came out of it; open
-[`examples/etf_SOXX.html`](examples/etf_SOXX.html) to click through the whole page.
+[`examples/full/etf_SOXX.html`](examples/full/etf_SOXX.html) to click through the whole page.
 
 The sample run's prose is Korean and predates the English translation — see below.
 

@@ -19,8 +19,10 @@ python3 tools/render_scan.py _workspace/12b_signal_scores.json \
     --gate _workspace/11_structure_gate.json --meta meta.json -o _workspace/html/
 ```
 
-Both are deterministic and both copy values without computing, so neither needs an agent
-to review it. Everything below describes the full-pipeline layer.
+Both renderers use supplied research values and compute layout deterministically.
+After changes, check the HTML and compare displayed values with their source.
+Everything below describes the full-pipeline layer. `--meta` is optional; omit it
+when no names/sectors metadata file exists.
 
 ## Layer structure
 

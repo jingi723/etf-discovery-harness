@@ -14,8 +14,8 @@ Claude Code용 ETF 리서치 에이전트입니다. 15개 에이전트가
 **시장 → 섹터 → 테마 → ETF 후보 → 검증**을 수행하고, Python 도구가
 지표 계산과 패턴 백테스트를 담당합니다.
 
-[샘플 실행](#바로-체험하기) · [최종 판단 보고서](examples/final_etf_decision.md) ·
-[데이터 누락 보고서](examples/data_coverage.md) · [설계 문서](docs/ARCHITECTURE.md)
+[샘플 실행](#바로-체험하기) · [최종 판단 보고서](examples/full/final_etf_decision.md) ·
+[데이터 누락 보고서](examples/full/data_coverage.md) · [설계 문서](docs/ARCHITECTURE.md)
 
 ![실제 샘플의 구성종목 맵. 면적은 보유 비중, 색은 재무 등급을 나타냅니다.](docs/images/holdings-heatmap.png)
 
@@ -38,9 +38,11 @@ cd etf-research-agent
 python3 -m http.server 8000 --bind 127.0.0.1 --directory examples
 ```
 
-브라우저에서 **http://127.0.0.1:8000/etf_SOXX.html**을 열어 구성종목 맵과
+브라우저에서 **http://127.0.0.1:8000/full/etf_SOXX.html**을 열어 구성종목 맵과
 등급 표를 살펴보세요. 종료는 `Ctrl+C`입니다. HTML 파일을 직접 열어도 됩니다.
 단일 ETF 상세 페이지 샘플이므로 상위 페이지로 돌아가는 전체 탐색 화면은 포함하지 않습니다.
+
+영문 스캔 샘플은 **http://127.0.0.1:8000/scan/html/scan_SMH.html**에서 볼 수 있습니다.
 
 ## 실제 티커 분석하기
 
@@ -88,10 +90,10 @@ Python 채점·백테스트 CLI는 FMP를 직접 호출하므로 이 대체 경�
 
 | 결과 | 확인할 내용 |
 |---|---|
-| [섹터·테마 발굴](examples/sector_theme_discovery.md) | 어떤 테마가 살아남고 탈락했는가 |
-| [ETF 후보](examples/etf_candidates.md) | 테마별 상품과 구조는 무엇인가 |
-| [최종 판단](examples/final_etf_decision.md) | 근거와 리스크가 판단에 어떻게 반영됐는가 |
-| [데이터 커버리지](examples/data_coverage.md) | 무엇을 확보하지 못했는가 |
+| [섹터·테마 발굴](examples/full/sector_theme_discovery.md) | 어떤 테마가 살아남고 탈락했는가 |
+| [ETF 후보](examples/full/etf_candidates.md) | 테마별 상품과 구조는 무엇인가 |
+| [최종 판단](examples/full/final_etf_decision.md) | 근거와 리스크가 판단에 어떻게 반영됐는가 |
+| [데이터 커버리지](examples/full/data_coverage.md) | 무엇을 확보하지 못했는가 |
 
 방법론, 도구별 사용 예시와 아키텍처는 [영문 README](README.md#the-tools)에 있습니다.
 번역, 재현 가능한 버그 제보, 데이터 제공자 개선을 환영합니다.

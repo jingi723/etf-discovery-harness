@@ -69,7 +69,7 @@ Record the actual bundled page; keep its historical date visible.
 
 1. 0–8s: Show the README headline and launch the sample command.
 2. 8–20s: Open the holdings map, select a holding, and show its weight and grade.
-3. 20–30s: Open `examples/data_coverage.md` and show one missing-data entry.
+3. 20–30s: Open `examples/full/data_coverage.md` and show one missing-data entry.
 4. 30–45s: Run `python3 tools/validate.py --self-check`, then show the repository URL.
 
 Caption the last command as an offline self-check, not a live market analysis.

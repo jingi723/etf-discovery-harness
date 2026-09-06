@@ -51,8 +51,9 @@ on `main` may be re-stated there rather than merged.
 python3 tools/validate.py --self-check     # must print "ok"
 python3 tools/score.py --self-check        # must print "ok"
 python3 tools/check_workspace.py --self-check  # must print "ok"
+python3 tools/render_scan.py --self-check  # must print "ok"
 python3 -m compileall -q tools .claude/skills
-python3 .claude/skills/etf-ui-render/scripts/check_html.py examples
+python3 .claude/skills/etf-ui-render/scripts/check_html.py examples/full examples/scan/html
 ```
 
 These checks run offline and are also run by GitHub Actions. Live scoring is an

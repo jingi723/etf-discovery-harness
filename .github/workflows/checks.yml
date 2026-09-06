@@ -28,11 +28,14 @@ jobs:
         run: python tools/score.py --self-check
       - name: Workspace contract self-check
         run: python tools/check_workspace.py --self-check
+      - name: Scan renderer self-check
+        run: python tools/render_scan.py --self-check
       - name: Validate sample HTML
-        run: python .claude/skills/etf-ui-render/scripts/check_html.py examples
+        run: python .claude/skills/etf-ui-render/scripts/check_html.py examples/full examples/scan/html
       - name: Check CLI entry points
         run: |
           python tools/score.py --help
           python tools/validate.py --help
           python tools/render.py --help
           python tools/check_workspace.py --help
+          python tools/render_scan.py --help

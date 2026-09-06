@@ -9,8 +9,8 @@ treemap coloured by score rather than grade, and the structure gate.
     python3 tools/render_scan.py _workspace/12b_signal_scores.json \\
         --gate _workspace/11_structure_gate.json -o html/
 
-Deterministic: same input, byte-identical output. It copies values and computes
-nothing, so there is nothing for an agent to review.
+Deterministic: same input, byte-identical output. It uses supplied research values
+and computes layout. Displayed values still need verification after changes.
 """
 from __future__ import annotations
 
