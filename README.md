@@ -11,8 +11,8 @@ and writes down the evidence, the risks, and what it could not find out.
 
 Fifteen specialised agents and seven skills handle regime diagnosis, theme evidence
 collection, holdings-level analysis, three independent grading axes, compliance QA,
-and report rendering. The output is never "buy this". Every candidate ends in one of
-four states: **worth reviewing / conditional / on hold / low priority**.
+and report rendering. The output is never a recommendation to buy — every candidate ends
+in one of four states: **worth reviewing / conditional / on hold / low priority**.
 
 > This project produces research notes, not investment advice. Nothing it generates is
 > a recommendation to buy or sell any security.
