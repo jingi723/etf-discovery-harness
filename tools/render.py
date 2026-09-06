@@ -268,9 +268,14 @@ def render_etf(pg):
     for i, (rx, ry, rw, rh, h1) in enumerate(rects):
         ffg = heat_col(h1.get("financial_grade"))
         vfg = heat_col(h1.get("valuation_grade"))
-        big = rw * rh > 400  # two-line labels on large tiles only
+        big = rw * rh > 400   # two-line labels on large tiles only
+        # A tile shorter than one line of text renders a clipped fragment, which
+        # reads as a broken image. Below this it carries colour and area only.
+        # Gate on height, not area: the clipping is vertical.
+        named = rh > 6.0
         label = (f'<div style="font-size:{11 if big else 9}px;font-weight:800;line-height:1.2;'
-                 f'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{e(h1.get("short_name") or h1["name"])}</div>'
+                 f'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'
+                 f'{e(h1.get("short_name") or h1["name"]) if named else ""}</div>'
                  + (f'<div style="font-size:9.5px;opacity:.85;margin-top:2px;">{e(h1.get("weight_pct"))}% · <span class="hm-g" data-i="{i}">{gtxt(h1.get("financial_grade"))}</span></div>' if big else ""))
         tiles += (f'<div class="hm-tile" data-i="{i}" data-name="{e(h1["name"])}" data-w="{e(h1.get("weight_pct"))}"'
                   f' data-fin="{gtxt(h1.get("financial_grade"))}" data-val="{gtxt(h1.get("valuation_grade"))}"'

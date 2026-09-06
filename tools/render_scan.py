@@ -112,11 +112,13 @@ def page(t, r, gate, meta):
     for (rx, ry, rw, rh), h in squarify(sorted(hs, key=lambda p: -p[0]), 0, 0, 100, 100):
         hb, hf, _ = band(h["score"])
         big = rw * rh > 300
+        named = rh > 6.0   # shorter than one line of text; a label would only clip
         tiles += (f'<div style="position:absolute;left:{rx:.2f}%;top:{ry:.2f}%;'
                   f'width:{rw:.2f}%;height:{rh:.2f}%;padding:2px;">'
                   f'<div style="width:100%;height:100%;background:{hb};color:{hf};'
                   f'border-radius:8px;padding:7px 8px;overflow:hidden;">'
-                  f'<div style="font-size:{12 if big else 10}px;font-weight:800;">{e(h["sym"])}</div>'
+                  f'<div style="font-size:{12 if big else 10}px;font-weight:800;">'
+                  f'{e(h["sym"]) if named else ""}</div>'
                   + (f'<div style="font-size:10px;opacity:.85;margin-top:2px;">'
                      f'{h["w"]:.2f}% · {h["score"]:.0f}</div>' if big else "")
                   + "</div></div>")
