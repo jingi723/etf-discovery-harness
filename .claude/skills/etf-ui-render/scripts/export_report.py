@@ -65,7 +65,9 @@ def export(source, output, format_name, image_height):
         else:
             command += [
                 "--force-device-scale-factor=2",
-                f"--window-size=430,{image_height}",
+                # 430 is the page container; the extra 20px keeps the
+                # scrollbar gutter from clipping the right edge
+                f"--window-size=450,{image_height}",
                 f"--screenshot={output}",
             ]
         run(command + [source.as_uri()])

@@ -1,5 +1,10 @@
 # ETF Discovery Harness
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
+[![dependencies: none](https://img.shields.io/badge/dependencies-none-brightgreen.svg)](#the-tools)
+[![Built for Claude Code](https://img.shields.io/badge/built%20for-Claude%20Code-d97757.svg)](https://claude.ai/code)
+
 A [Claude Code](https://claude.ai/code) harness that narrows the market down to a
 short list of ETFs — **market regime → sector → theme → ETF candidates → verification** —
 and writes down the evidence, the risks, and what it could not find out.
@@ -11,6 +16,15 @@ four states: **worth reviewing / conditional / on hold / low priority**.
 
 > This project produces research notes, not investment advice. Nothing it generates is
 > a recommendation to buy or sell any security.
+
+<p align="center">
+  <img src="docs/images/etf-detail.png" width="46%" alt="ETF verdict page: three grading axes with coverage and confidence, and the reasons behind a conditional verdict">
+  <img src="docs/images/holdings-heatmap.png" width="46%" alt="Constituent score map: a treemap sized by portfolio weight and coloured by grade">
+</p>
+<p align="center">
+  <sub>Sample output — the verdict page and the constituent score map, where area is portfolio weight and colour is grade.<br>
+  Browse the full run in <a href="examples/">examples/</a>.</sub>
+</p>
 
 ## Why this exists
 
@@ -137,8 +151,9 @@ python3 tools/render.py path/to/ui_payload.json -o ./html
 ```
 
 It copies payload values verbatim and computes nothing, which is why no agent reviews
-its output — a renderer that cannot invent a grade cannot misreport one. See
-[`examples/etf_SOXX.html`](examples/etf_SOXX.html).
+its output — a renderer that cannot invent a grade cannot misreport one. The pages at
+the top of this README came out of it; open
+[`examples/etf_SOXX.html`](examples/etf_SOXX.html) to click through one.
 
 ### `tools/data.py` — market data, two optional backends
 
