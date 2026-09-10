@@ -161,6 +161,33 @@ def ratios_pe(symbol):
     return float(pe) if pe is not None else None
 
 
+def score_holding(symbol, horizon, bench_20d, sub_sector=None):
+    """Score one constituent the same way the fund itself is scored, minus macro.
+
+    Macro is the one hand-supplied input and there is no way to enter one per
+    holding, so it is dropped and the rest renormalised. Valuation stays in: it
+    comes from the provider, and leaving it out is what let a loss-making name
+    show a top-band colour on chart strength alone.
+
+    Returns (total, parts, technicals, coverage%) or None when the symbol has no
+    price history — cash, T-bills and swap legs all appear in ETF holdings.
+    """
+    t = technicals(symbol, bench_20d, 65)
+    parts = {
+        "value": score_value(symbol, sub_sector),
+        "trend": score_trend(t),
+        "momentum": score_momentum(t),
+        "position": score_position(t, horizon),
+        "rs": score_rs(t),
+        "flow": score_flow(t),
+    }
+    w = {k: v for k, v in WEIGHTS[horizon].items() if k != "macro"}
+    have = [k for k in w if w[k] and parts[k] is not None]
+    cov = sum(w[k] for k in have)
+    total = sum(parts[k] * w[k] for k in have) / cov if cov else None
+    return total, parts, t, round(100 * cov / sum(w.values()))
+
+
 def score(symbol, horizon="swing", macro=50, sub_sector=None, benchmark="SPY"):
     b = data.prices(benchmark, 30)
     bench_20d = 100 * (b[0]["close"] / b[20]["close"] - 1)
@@ -225,27 +252,33 @@ def main():
             print("\n  (no holdings from FMP — Korean ETFs are not covered; "
                   "pull the issuer's official PDF instead)")
             return
-        print(f"\n  Top constituents ({len(hs)} total):")
+        print(f"\n  Top constituents ({len(hs)} total) — colour is the score, not a guess:")
+        print(f"    {'weight':>7} {'':2} {'ticker':<12}{'today':>8}{'20d':>8}"
+              f"{'pos':>6}{'trend':>7}{'score':>7}  note")
         b = data.prices(a.benchmark, 30)
         bench_20d = 100 * (b[0]["close"] / b[20]["close"] - 1)
-        rising = seen = 0
+        rising = seen = 0.0
         for h in hs[:10]:
-            sym = h.get("asset") or h.get("symbol")
+            sym = str(h.get("asset") or h.get("symbol"))
             wt = h.get("weightPercentage") or 0
             try:
-                ht = technicals(sym, bench_20d, 65)
+                total, parts, ht, cov = score_holding(sym, a.horizon, bench_20d,
+                                                      a.sub_sector)
             except Exception:
-                print(f"    {str(sym):12}{wt:>6.2f}%   (no data)")
+                print(f"    {wt:>6.2f}% {'':2} {sym:<12}"
+                      f"{'':>29}  no price history (cash, bond or swap leg)")
                 continue
             up = ht["ma20"] > ht["ma60"]
-            rising += up
-            seen += 1
-            print(f"    {str(sym):12}{wt:>6.2f}%  {ht['chg']:>+6.2f}%  "
-                  f"20d {ht['d20']:>+6.1f}%  pos {ht['pos60']:>3.0f}%  "
-                  f"{'up' if up else 'down':>4}")
+            rising += wt * up
+            seen += wt
+            note = "loss-making" if parts["value"] == 0 else \
+                   f"no P/E ({cov}% cov)" if parts["value"] is None else ""
+            print(f"    {wt:>6.2f}% {light(total)} {sym:<12}{ht['chg']:>+7.2f}%"
+                  f"{ht['d20']:>+7.1f}%{ht['pos60']:>5.0f}%"
+                  f"{'up' if up else 'down':>7}{total:>7.0f}  {note}")
             time.sleep(0.2)
         if seen:
-            print(f"    -> {rising}/{seen} in an uptrend "
+            print(f"    -> {rising:.1f}% of the weight is in an uptrend "
                   f"(breadth: this is what separates a real move from a bounce)")
 
 
@@ -272,6 +305,14 @@ def demo():
     # carrying weight while saying nothing
     flows = {score_flow({"vol_ratio": r}) for r in (0.4, 0.7, 0.9, 1.1, 1.5)}
     assert len(flows) == 5, flows
+    # A constituent drops macro and renormalises over what is left. Valuation
+    # stays in — excluding it is what let a loss-making name show a top band.
+    w = {k: v for k, v in WEIGHTS["swing"].items() if k != "macro"}
+    assert "macro" not in w and w["value"] == 5
+    full = sum(w.values())
+    assert round(100 * (full - w["value"]) / full) == 94, "coverage when P/E is missing"
+    # A loss scores 0, which is a real signal; no data is excluded instead
+    assert score_value("__nonexistent__") is None
     print("ok")
 
 

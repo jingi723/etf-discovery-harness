@@ -129,9 +129,15 @@ Macro carries 40% at the long horizon because rates set the direction and the ch
 only sets the entry. Valuation is worth 0 at the short horizon because multiples do
 not move in a week. Leveraged ETFs default to the short profile.
 
-`--holdings` also scores the ETF's top constituents and reports **breadth** — how many
-are actually in an uptrend. An index holding up while six of its eight largest holdings
-roll over is a retracement, not a bottom.
+`--holdings` scores each of the top constituents the same way and reports **breadth** —
+how much of the weight is actually in an uptrend. An index holding up while its largest
+holdings roll over is a retracement, not a bottom.
+
+A constituent is scored on the same profile minus macro, which is the one hand-supplied
+input and cannot be entered per holding. **Valuation stays in.** Leaving it out is what
+let a loss-making refiner show a top-band colour on chart strength alone — it scores 82
+on price action and 78 once the negative P/E is counted, and the row now says
+`loss-making` beside it.
 
 Colour bands follow the Korean market convention, where **red is positive**:
 `🔴 80+ / 🟠 60–80 / 🟡 40–60 / 🟢 20–40 / 🔵 0–20`. The score is a measure of how many
