@@ -44,6 +44,17 @@ PE_BANDS = {
 
 BANDS = [(80, "🔴"), (60, "🟠"), (40, "🟡"), (20, "🟢"), (0, "🔵")]
 
+# A weight that moves with the state instead of staying constant. One case so
+# far: valuation matters little while a company earns and a great deal once it
+# stops. 30 is the smallest weight that keeps a loss-making name out of the 🟠
+# band on a perfect chart — a name scoring 80 on everything else lands at 58.9.
+# Any lower and "profitable" and "loss-making" read alike.
+#
+# Read it as a condition, not a curve. Every added condition costs
+# explainability, and a rule nobody can state in one sentence is overfitting in
+# a good suit. One condition, plainly stated, is the budget.
+LOSS_VALUE_WEIGHT = 30
+
 
 def light(v):
     return next(sym for lo, sym in BANDS if v >= lo)
@@ -161,6 +172,20 @@ def ratios_pe(symbol):
     return float(pe) if pe is not None else None
 
 
+def dynamic_weights(parts, w):
+    """Adjust weights for the state before scoring. Returns (weights, note)."""
+    if parts.get("value") != 0 or not w.get("value"):
+        return w, None
+    rest = sum(v for k, v in w.items() if k != "value")
+    if not rest:
+        return w, None
+    keep = sum(w.values()) - LOSS_VALUE_WEIGHT
+    scale = keep / rest
+    w = {k: (LOSS_VALUE_WEIGHT if k == "value" else v * scale) for k, v in w.items()}
+    return w, (f"loss-making: valuation weighted {LOSS_VALUE_WEIGHT}%, "
+               f"the rest scaled down to match")
+
+
 def score_holding(symbol, horizon, bench_20d, sub_sector=None):
     """Score one constituent the same way the fund itself is scored, minus macro.
 
@@ -181,19 +206,23 @@ def score_holding(symbol, horizon, bench_20d, sub_sector=None):
         "rs": score_rs(t),
         "flow": score_flow(t),
     }
-    w = {k: v for k, v in WEIGHTS[horizon].items() if k != "macro"}
+    w, _ = dynamic_weights(parts, {k: v for k, v in WEIGHTS[horizon].items()
+                                   if k != "macro"})
     have = [k for k in w if w[k] and parts[k] is not None]
     cov = sum(w[k] for k in have)
     total = sum(parts[k] * w[k] for k in have) / cov if cov else None
     return total, parts, t, round(100 * cov / sum(w.values()))
 
 
-def score(symbol, horizon="swing", macro=50, sub_sector=None, benchmark="SPY"):
+def score(symbol, horizon="swing", macro=None, sub_sector=None, benchmark="SPY"):
     b = data.prices(benchmark, 30)
     bench_20d = 100 * (b[0]["close"] / b[20]["close"] - 1)
     t = technicals(symbol, bench_20d)
     parts = {
-        "macro": macro,                      # supplied by the caller, see note
+        # Supplied by the caller. None when nobody judged it, and then it is
+        # excluded like any other gap rather than filled with a neutral 50 —
+        # otherwise an unassessed macro reads as an assessed one.
+        "macro": macro,
         "value": score_value(symbol, sub_sector),
         "trend": score_trend(t),
         "momentum": score_momentum(t),
@@ -201,13 +230,13 @@ def score(symbol, horizon="swing", macro=50, sub_sector=None, benchmark="SPY"):
         "rs": score_rs(t),
         "flow": score_flow(t),
     }
-    w = WEIGHTS[horizon]
+    w, note = dynamic_weights(parts, WEIGHTS[horizon])
     # Renormalise over the indicators that actually have data, the way
     # weighted_grade.py does. Never substitute a number for a gap.
     have = [k for k in w if w[k] and parts[k] is not None]
     cov = sum(w[k] for k in have)
     total = sum(parts[k] * w[k] for k in have) / cov if cov else None
-    return total, parts, w, t, cov
+    return total, parts, w, t, round(cov), note
 
 
 def main():
@@ -217,31 +246,39 @@ def main():
     ap.add_argument("--horizon", default="swing", choices=list(WEIGHTS))
     ap.add_argument("--benchmark", default="SPY",
                     help="SPY for US, 069500.KS for Korea")
-    ap.add_argument("--macro", type=int, default=50,
-                    help="0-100, judged by hand. Same event flips sign by sector: "
-                         "a rising oil price is negative for semis (via rates) "
-                         "and positive for nuclear and lithium.")
+    ap.add_argument("--macro", type=int, default=None,
+                    help="0-100, judged by hand. Omit it and macro is EXCLUDED, not "
+                         "assumed neutral — pass --macro 50 to say neutral on purpose. "
+                         "The same event flips sign by sector: a rising oil price is "
+                         "negative for semis (via rates) and positive for nuclear and "
+                         "lithium. For a refiner the dominant variable is the crack "
+                         "spread, which tools/structure.py --eia reports.")
     ap.add_argument("--sub-sector", choices=list(PE_BANDS), default=None)
     ap.add_argument("--holdings", action="store_true",
                     help="also score the ETF's top constituents")
     a = ap.parse_args()
 
-    total, parts, w, t, cov = score(a.symbol, a.horizon, a.macro,
-                                    a.sub_sector, a.benchmark)
+    total, parts, w, t, cov, note = score(a.symbol, a.horizon, a.macro,
+                                          a.sub_sector, a.benchmark)
     print(f"\n{a.symbol}  {t['date']}  {t['close']:,.2f} ({t['chg']:+.2f}%)")
     if total is None or cov < 60:
         print(f"⚪ {a.horizon} score suspended — only {cov}% of weight has data\n")
     else:
-        note = "" if cov == 100 else f"  ({cov}% of weight has data)"
-        print(f"{light(total)} {a.horizon} score {total:.1f}/100{note}\n")
+        cover = "" if cov == 100 else f"  ({cov}% of weight has data)"
+        print(f"{light(total)} {a.horizon} score {total:.1f}/100{cover}\n")
+        if note:
+            print(f"  ! {note}\n")
     for k in w:
         if not w[k]:
             continue
         if parts[k] is None:
-            print(f"  {k:9}   n/a  (weight {w[k]:>2}%) -> excluded, renormalised")
+            print(f"  {k:9}   n/a  (weight {w[k]:>4.1f}%) -> excluded, renormalised")
         else:
-            print(f"  {k:9} {parts[k]:>5.0f} pt  (weight {w[k]:>2}%) -> "
+            print(f"  {k:9} {parts[k]:>5.0f} pt  (weight {w[k]:>4.1f}%) -> "
                   f"{parts[k]*w[k]/cov*100/100:>5.2f}  {light(parts[k])}")
+    if a.macro is None:
+        print("\n  macro not assessed — excluded, not scored 50. Name the sector's "
+              "dominant variable and pass --macro, or say so in the judgment.")
     print(f"\n  ma20 {t['ma20']:,.2f} / ma60 {t['ma60']:,.2f} / ma200 {t['ma200']:,.2f}")
     print(f"  20d {t['d20']:+.1f}%  rs {t['rs']:+.1f}pp  pos60 {t['pos60']:.0f}%  "
           f"from-high {t['from_high']:+.1f}%  vol {t['vol_ratio']:.2f}x")
@@ -313,6 +350,24 @@ def demo():
     assert round(100 * (full - w["value"]) / full) == 94, "coverage when P/E is missing"
     # A loss scores 0, which is a real signal; no data is excluded instead
     assert score_value("__nonexistent__") is None
+    # An unassessed macro is excluded, never filled with a neutral 50
+    w = WEIGHTS["swing"]
+    parts = {k: 50 for k in w}
+    parts["macro"] = None
+    have = [k for k in w if w[k] and parts[k] is not None]
+    assert sum(w[k] for k in have) == 90, "macro must drop out of the coverage"
+    assert sum(parts[k] * w[k] for k in have) / 90 == 50
+    # A loss lifts the valuation weight; the rest scale down to preserve the sum
+    w2, note = dynamic_weights({"value": 0}, WEIGHTS["swing"])
+    assert w2["value"] == LOSS_VALUE_WEIGHT and note
+    assert abs(sum(w2.values()) - 100) < 1e-9, "weights must still sum to 100"
+    # Perfect on everything else but loss-making must not reach the orange band
+    p2 = {k: 100 for k in WEIGHTS["swing"]}
+    p2["value"], p2["position"] = 0, 25
+    w3, _ = dynamic_weights(p2, WEIGHTS["swing"])
+    got = sum(p2[k] * w3[k] for k in w3) / sum(w3.values())
+    assert 55 < got < 60, f"a loss-maker should land below orange, got {got:.1f}"
+    assert dynamic_weights({"value": 75}, WEIGHTS["swing"])[1] is None
     print("ok")
 
 

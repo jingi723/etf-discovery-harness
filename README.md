@@ -129,6 +129,17 @@ Macro carries 40% at the long horizon because rates set the direction and the ch
 only sets the entry. Valuation is worth 0 at the short horizon because multiples do
 not move in a week. Leveraged ETFs default to the short profile.
 
+**One weight moves with the state.** Valuation matters little while a company earns
+and a great deal once it stops, so a loss carries 30% instead of 5% and the rest scale
+down. A refiner with a perfect chart, perfect momentum and perfect relative strength
+scores 80 on a profit and **58.9** on a loss — out of the second band entirely. That is
+the point: a score above 60 reads as investable, and a loss-making company should not
+land there on price action alone.
+
+It is a condition, not a curve, and there is exactly one of them. Every condition added
+costs explainability, and a rule nobody can state in one sentence is overfitting in a
+good suit.
+
 `--holdings` scores each of the top constituents the same way and reports **breadth** —
 how much of the weight is actually in an uptrend. An index holding up while its largest
 holdings roll over is a retracement, not a bottom.
