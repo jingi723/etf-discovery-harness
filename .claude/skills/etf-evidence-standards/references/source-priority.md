@@ -141,9 +141,34 @@ A token request failing with 403 `access_denied` / `"IP address not allowed"` is
 4. **No qualitative words as data** — "high", "strong", "robust" never become a score. Background prose only
 5. **Tier** — 1st (Fed, SEMI, WSTS, company filings and earnings calls) > 2nd (TrendForce, Counterpoint, SMM and similar vendors) > 3rd (general news). Third tier evidences only that an event occurred
 
-**A rejection, recorded:** adding a semiconductor capacity-utilisation indicator was scoped and dropped — TSMC publishes only qualitative language, SMIC's 93.7% is a scope mismatch (Chinese firm), and every candidate figure was six months stale. FRED (`CAPUTLG3344S`) returns 403 over both CSV and fetch; revisit if a free API key is obtained.
+**A rejection, recorded:** adding a semiconductor capacity-utilisation indicator was scoped and dropped — TSMC publishes only qualitative language, SMIC's 93.7% is a scope mismatch (Chinese firm), and every candidate figure was six months stale. FRED was later re-verified — `https://fred.stlouisfed.org/graph/fredgraph.csv?id={series}` opens with no API key, and `tools/structure.py --fred` now pulls utilisation (`CAPUTLG3344S`), manufacturing utilisation (`MCUMFN`) and the production index (`IPG3344S`) that way. Monthly, 30–40 days lagged, primary (Federal Reserve) tier.
 
 ### Commodity producers — do not plug in the spot price
 A producer's earnings are set by contracted volume, realised price, and position on the cost curve — not by spot.
 - Case (SQM, 2026-09): Chinese lithium spot was **−10.3%** over one month while the stock was **+10.1%** over 20 days. Why: ① **80% of 2026 volume already contracted** ② realised price **$21.80/kg, +23% QoQ** (above the $18.14 spot) ③ Tier-1 cost of **$3–5/kg**, so falling prices remove higher-cost competitors first
 → Spot is directional context only. **Collect contracted share, realised price, and cost ranking alongside it.**
+
+
+### Do not source a fund's case from the fund's own manager (added 2026-09-09)
+A market note published by an ETF or fund manager is **material promoting the theme it sells**. It may be entirely factual and still be selective in which statistic it picks and how it frames it, because the framing is the interest.
+
+**Case (URNM, 2026-09-09):** a uranium miners ETF was scored 84.2 🔴 and marked conditional, on a "thirteenth consecutive year of contracting below replacement, 226M lbs cumulative shortfall over five years" framing — published by Sprott, the manager of URNM and URA. Cross-checking against public statistics reversed the direction.
+
+| | Source | Figure |
+|---|---|---|
+| Contracting shortfall | Sprott (the manager) | 13 straight years, 226M lbs over five |
+| Utility inventory | EIA *Uranium Marketing Annual Report* | 115M → **118M lbs (+3%)** |
+| Total commercial inventory | 〃 | 156M → **170M lbs (+9%)** |
+| Utility purchases | 〃 | 55.9M → **46.9M lbs (−16%)** |
+
+Inventories were rising and purchases falling. The verdict went from conditional to low priority.
+
+→ **Always look for the public statistic first** (EIA, the Fed, IEA, USGS, exchanges, filings). Drop manager material to third tier, and when citing it, say in the judgment that the publisher manages the fund.
+
+### Distinguish a contracting shortfall from a physical one (added 2026-09-09)
+"Supply shortage" describes two different layers, and mixing them wrecks the timing.
+
+- **Contracting shortfall** — long-term contracted volume falls short of consumption. A change in *how* buyers procure, not evidence that the material is unavailable. Utilities can buy spot or short-term instead.
+- **Physical shortage** — inventory itself is drawing down. This is what forces an event.
+
+In uranium the first was read as the second and written up as "they are eating into the warehouse", while EIA inventories were in fact rising. **If you cannot find the inventory statistic, write "physical shortage not confirmed."**

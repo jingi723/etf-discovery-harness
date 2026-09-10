@@ -141,13 +141,24 @@ It has to paste into a chat client, so **no markdown tables, headers, or blockqu
 {●} External:   {rates, FX, policy — and its sign for THIS sector}    [{score}, weight {w}%]
 {●} Total:      {weighted score}/100 on the {horizon} profile
 
-Holdings:    {top 8 by 60-day position and trend (20>60), count} — does "most constituents are near a bottom" hold?
-Events:      {today's and this week's catalysts, plus any pattern validated with historical numbers}
-Constituents: 🔴 {tickers} / 🟠 {tickers} / 🟡 {tickers} / 🟢 {tickers} / 🔵 {tickers}
+Holdings:    {top 8 by weight, one per line: today / 1wk / 20d / 60-day position / trend}
+             {share of weight still in an uptrend} — does "most constituents are near a bottom" hold?
+Events:      {today's and this week's catalysts + 2σ shock count over the last 20 sessions
+             + any pattern validated with historical numbers}
+Catalysts (dated):       {only what has a date inside the judgment window: earnings, a
+             regulatory decision, a policy calendar. Write "none" when there is none —
+             that line decides the call}
+Catalysts (conditional): {what the structure's tension is likely to produce, with the
+             arithmetic. "Inventory at N days -> an expansion or price-rise announcement is
+             likely within the month". Where tension is low, say "low hazard" and give the figures}
 
-Structural reason: {2–3 sentences on why it is in this state, from industry structure — not from the scores}
+Structural reason: {2–3 sentences on why it is in this state, from industry structure — not from
+             the scores. Direction here is a quarters-and-years matter; it reaches the one-month
+             call only through Catalysts (conditional) above}
 
-Conclusion: {2–3 conversational sentences. The call, the stop and target levels (on the underlying index), and a plain statement of what would prove it wrong}
+Conclusion: {2–3 conversational sentences. **One of the four verdict states**, the stop and
+             target levels (on the underlying index), and a plain statement of what would prove
+             it wrong}
 ```
 
 For a Korean request, use the Korean field labels — this is the established wording, not a fresh translation:
@@ -156,22 +167,34 @@ For a Korean request, use the Korean field labels — this is the established wo
 {티커} {보유/진입} 판단 | {날짜} ({시장} {요일} 종가 기준)
 
 {●} 거래량·수급: {20일 평균 대비 배율, 투자자별 순매수, 풋/콜} — 해석   [{점수}, 가중 {w}%]
-{●} 차트(추세): {20선·60선 관계, 지지·저항} — 해석                      [{점수}, 가중 {w}%]
+{●} 차트(추세): {20선·60선·200선 관계, 지지·저항} — 해석                 [{점수}, 가중 {w}%]
 {●} 모멘텀: {20일 수익률 + 거래량 동반 여부} — 해석                      [{점수}, 가중 {w}%]
-{●} 위치·바닥: {60일 레인지 내 위치, 200선 이격} — 해석                  [{점수}, 가중 {w}%]
+{●} 위치·바닥: {60일 레인지 내 위치, 고점 대비} — 해석                    [{점수}, 가중 {w}%]
 {●} 상대강도: {벤치마크 대비 20일 초과수익} — 해석                       [{점수}, 가중 {w}%]
-{●} 가격 적정성: {상위 종목을 서브섹터 밴드 대비} — 해석                  [{점수}, 가중 {w}%]
-{●} 외부 요인: {금리·환율·정책 — 이 섹터에 주는 부호} — 해석             [{점수}, 가중 {w}%]
-{●} 종합: {가중 점수}/100 ({시간축} 기준)
-차트(구성종목): {상위 8종목의 60일 위치·추세(20선>60선) 개수} — "구성종목 대부분 바닥" 조건 충족 여부
-이벤트: {오늘·이번 주 재료 + 과거 사례 수치로 검증한 패턴}
-가격 적정성: {상위 종목 PER·EV/EBITDA를 서브섹터 밴드 대비} — 싸다/비싸다
-외부 요인: {금리·환율·정책}
-구성종목: 🔴 {티커} / 🟠 {티커} / 🟡 {티커} / 🟢 {티커} / 🔵 {티커}
+{●} 가격 적정성: {상위 종목 배수를 서브섹터 밴드 대비, 배수 확보 비중} — 해석  [{점수}, 가중 {w}%]
+{●} 외부 요인: {금리·환율·정책 — 이 섹터에 주는 부호} — 해석              [{점수}, 가중 {w}%]
+{●} 종합: {가중 점수}/100 ({시간축} 기준, 커버리지 {N}%)
 
-구조적 이유: {점수가 아니라 산업 구조로 왜 이런 상태인지 2~3문장}
+구성종목: 비중 내림차순, 한 줄에 한 종목. 색은 채점 결과이지 눈이 아니다.
+  비중      종목            오늘      1주      20일   60일위치   추세
+  26.76%  🟠 현대건설      +2.24%   -6.31%   +12.7%     55%   상승
+  23.92%  🟡 두산에너빌리티   +3.76%   -9.32%    +7.9%     49%   하락
+  ...
+  0.30%     원화예금
 
-결론: {구어체 2~3문장. 판단 + 손익절 레벨(기초 지수 기준) + "틀리면 자른다"는 솔직한 표현}
+차트(구성종목): {추세 생존 비중 %} — "구성종목 대부분 바닥" 조건 충족 여부
+이벤트: {오늘·이번 주 재료 + 최근 20일 2σ 충격 상방/하방 횟수 + 검증된 패턴}
+촉매(확정): {판정 기간 안에 날짜가 잡힌 것만. 실적일·규제 결정·정책 일정.
+        없으면 "없음"이라고 적는다 — 이게 판정을 뒤집는다}
+촉매(조건부): {구조 긴장도가 낳을 것으로 보이는 이벤트 + 남은 시간 계산.
+        "재고 N일 → 증산·가격인상 발표가 한 달 안에 나올 확률 높음" 형태.
+        긴장도가 낮으면 "해저드 낮음"과 그 근거 수치를 적는다}
+
+구조적 이유: {점수가 아니라 산업 구조로 왜 이런 상태인지 2~3문장.
+        방향은 분기 이상 얘기이고, 1개월에는 위 촉매(조건부)로만 넘어간다}
+
+결론: {구어체 2~3문장. 4단계 판정 중 하나를 명시 + 손익절 레벨(기초 지수 기준)
+     + "틀리면 자른다"는 솔직한 표현}
 ```
 
 Rules:
@@ -181,7 +204,23 @@ Rules:
 - **Only the conclusion is conversational.** The indicator lines stay compressed and declarative.
 - **Never drop the constituents line.** For an ETF, holdings are not an optional extra.
 - **Never drop the structural reason.** Listing scores without it leaves out why.
-- Long is the default. **If the target is leveraged, short is primary** with long quoted alongside. State in the judgment which one is primary.
+- **The one-month profile is the default.** Long is quoted alongside on request, or when the two split badly; say which is primary. If the target is leveraged, short is primary. Long is not the default because macro carries 40% there — a single hand-entered number decides half the score. Changing macro from 25 to 65 on one Korean semiconductor fund moved the long score 33.1 -> 49.1 (16 points) while the one-month score moved 4.
+- **Structure enters a one-month call as an event hazard, not as a direction.** Industry structure works over quarters and cannot push a price inside a month, but it does set the probability that an event lands within it. Inventory at the floor produces expansion, price-rise or allocation announcements with no calendar entry at all.
+
+  ```
+  tension = buffer / drawdown rate = time remaining
+    time remaining on the order of the judgment window -> use it
+    time remaining ten times the window or more        -> do not
+  ```
+
+  Memory sat under 10 days against a normal 28–42 and a broker note on no calendar moved SK Hynix +8.26% in a day — **the structure produced the event.** Lithium had a 109,000 t buffer against a 1,500–80,000 t annual deficit, so 1.4 to 70 years remained and nobody had a reason to hurry. Both are bullish structures; only one is a one-month case. **It is negative because tension was used, not because structure was excluded** — shrink the buffer to 30 days and the same structure turns the call positive.
+- **Find both the numerator and the denominator of tension.** Never substitute a phrase like "the buffer is negative" or "it is already at the floor" for a timing figure. A five-year cumulative contracting shortfall of 226M lbs was read as "high hazard" on one uranium fund, while the actual buffer — EIA utility inventory — was 118M lbs, 2.5 years of cover, and **rising 3% year on year**. That mistook the direction of a shortage for its timing. With no numerator, write **"tension undetermined"** and claim no hazard.
+- **For commodities the timing variable may not be inventory.** Uranium utilities contract two to five years ahead of delivery, so "who comes to market, and when" sets the timing. Establish what actually triggers an event in that market before reaching for inventory.
+- **A date on the calendar is not a catalyst.** Check three things: does anything new become public that day; is its content already a known direction; and did that event historically beat the baseline (n<20 means do not cite it). A nuclear industry symposium was written in as a dated catalyst and failed all three — the biennial report was not due that year, an industry gathering says what the industry already says, and the 20-day performance after it was n=4 with a range of −21% to +23%. **Leave `Catalysts (dated)` as "none" rather than trawling a calendar to fill it.**
+- **The one-month call is made on catalysts and location.** In order: (1) is there anything dated inside the window; (2) is tension high enough to produce an event without one; (3) how many 2σ shocks in the last 20 sessions; (4) which is nearer, resistance or support. One fund scored none, low, zero and support-nearer, and support breaking opened a 10.4% gap below. **Quote support and resistance as distances, with the gap beyond them** — levels alone hide the asymmetry.
+- **Never use a forecast as grounds for a call.** Each time you write a reason, check it: is this something that has already happened, or something I think will happen? If the latter, convert it to a condition or drop it. A refining fund was marked low priority on "the crack will normalise", "demand destruction will widen" and "Russia will return" — all three predictions, none observations. What was observed was that margin was still climbing and the prior high had just been taken out on 2.43x volume. **Write the prediction as an observable condition instead: "if the crack drops below $60".**
+- **Separate "no reason to win" from "unknown whether it lasts".** The first is low priority, the second is conditional. Using the first for the second dresses a forecast up as a verdict.
+- **Write one of the four verdict states in the conclusion.** Worth reviewing / conditional / on hold / low priority. Do not substitute prose like "neither good nor bad" or "expected value near zero". Blurring the verdict is declining to make one. On hold is only for genuinely insufficient grounds; once "there is no reason to win" is established, that is low priority.
 - **Stop/target levels and all directional wording are quoted on the underlying index.** Leveraged ETFs are path-dependent through negative compounding, so the same index level maps to a different price every time — SOXL/SOXS are the order-entry instrument, SOXX is the ruler. On an inverse position, "downside" is ambiguous, so append "(favourable/unfavourable for SOXS)".
 - Anything you could not obtain is written as "not obtained". Never invented.
 

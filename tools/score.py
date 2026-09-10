@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import statistics
 import sys
+import unicodedata
 import time
 from pathlib import Path
 
@@ -46,6 +47,13 @@ BANDS = [(80, "🔴"), (60, "🟠"), (40, "🟡"), (20, "🟢"), (0, "🔵")]
 
 def light(v):
     return next(sym for lo, sym in BANDS if v >= lo)
+
+
+def pad(s, width):
+    """Pad to a terminal *column* count. CJK characters occupy two columns, so an
+    f-string width leaves any table containing them ragged."""
+    w = sum(2 if unicodedata.east_asian_width(c) in "WF" else 1 for c in s)
+    return s + " " * max(0, width - w)
 
 
 def _sma(xs, n):

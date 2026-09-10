@@ -88,7 +88,7 @@ detail page).
 
 ## The tools
 
-Six scripts you can run without Claude Code at all. They are the deterministic core;
+Eight scripts you can run without Claude Code at all. They are the deterministic core;
 the agents call the same logic and explain the output.
 
 ### `tools/score.py` — seven indicators, three horizons
@@ -160,6 +160,84 @@ count), `fib618` (61.8% retracement break), `touch200`, `golden_cross`. Every ru
 prints the pattern's forward return next to the return of picking a random day. If it
 does not beat the baseline, it is noise — and the script says so.
 
+### `tools/eventstudy.py` — does the score forecast anything?
+
+It does not, and this script is how we found out.
+
+```console
+$ python3 tools/eventstudy.py ic
+
+  🔴 80+          437   +0.45%   50.8%
+  🟠 60-80      7,224   +1.08%   55.8%
+  🟡 40-60      9,797   +1.51%   58.7%
+  🟢 20-40      2,999   +2.19%   60.5%
+  all          20,460   +1.44%   57.7%
+
+  IC (score vs forward return) = -0.0647
+```
+
+Over 20,460 observations the composite score runs *inverse* to the next month's return.
+The score describes the present accurately; it was never a forecast, and reading it as
+one is the mistake.
+
+What the indicators *can* do is filter after an event. Following a 2σ down-shock, the
+prior 120-day trend separates the recoveries from the continuations by **+2.76pp**,
+monotonically across quartiles — a wider spread than the same indicator gets
+unconditionally. After an *up*-shock the same split is worth +0.10pp: charts cannot tell
+you how far good news travels. That one gap is the entire case for a news pipeline, and
+it says exactly where it belongs.
+
+The `self-check` mode is the important one. It rebuilds a past-dated indicator, poisons
+the latest bar, and asserts the value is unchanged — the standard way a backtest lies to
+you is future data leaking into a past date.
+
+[docs/EVENT_STRUCTURE.md](docs/EVENT_STRUCTURE.md) carries all four measurements, the
+design conclusions that follow, and the limits — including how unstable these IC
+estimates are year to year.
+
+### `tools/structure.py` — the layer between a score and an event
+
+A score says what state something is in. An event moves the price. Between them sits
+**structure — an unresolved imbalance**, which sets both the *sign* of the events a
+market will produce and how *soon* they must arrive.
+
+```console
+$ python3 tools/structure.py --eia
+
+[US petroleum inventories] EIA weekly, week ending 8/28/26, million bbl
+                                        now   wk chg    yr ago     YoY
+  🟡 Commercial (Excluding SPR)       424.5     -4.5     420.7   +0.9%
+  🔴 SPR                              286.6     -3.1     404.7  -29.2%
+  🟠 Distillate Fuel Oil              104.2     +0.8     115.9  -10.1%
+
+[US domestic demand] product supplied, thousand b/d -- exports excluded
+                                    week   yr ago     YoY     4wk avg   yr ago     YoY
+  🟡 Distillate Fuel Oil           3,390    3,768  -10.0%       3,660    3,894   -6.0%
+
+[3-2-1 crack spread] Gulf Coast, per barrel -- normal range $20-40
+     date            WTI  gasoline   diesel    crack     chg
+  🔴 Fri 8/28      84.57     3.742    4.346    81.05   +4.33
+```
+
+Crude inventories sit 1% above the five-year average while distillate is at its lowest
+seasonal level since the 1980s and refining margin runs two to four times normal. That
+is not a crude shortage; it is a shortage of the plants that turn crude into diesel.
+Inventories alone could not have told you that — you need demand next to them.
+
+`--fred` pulls capacity utilisation and the production index; passing tickers or `--etf`
+computes days of inventory, margin trend, and **tension** from company filings:
+
+```
+tension = buffer / drawdown rate = time remaining
+```
+
+Days of inventory alone flips sign in a price spike, because balance-sheet inventory is
+carried at cost. So tension reads inventory **together with margin**, and when margin
+expands while inventory days rise it reports *undetermined* rather than *easing*.
+
+All of it is free and needs no API key. [docs/EVENT_STRUCTURE.md](docs/EVENT_STRUCTURE.md)
+carries the measurements and the reasoning.
+
 ### `tools/render.py` — payload to static HTML
 
 Turns the pipeline's `ui_payload.json` into self-contained mobile pages — a constituent
@@ -208,6 +286,8 @@ for a log that survives across processes. A plain `score.py` run costs 3 calls; 
 │   ├── data.py                         # FMP + Toss Securities providers
 │   ├── score.py                        # 7 indicators × 3 horizons
 │   ├── validate.py                     # pattern backtester
+│   ├── eventstudy.py                   # does the score forecast? (it does not)
+│   ├── structure.py                    # inventory, margins, tension; EIA and FRED
 │   ├── render.py                       # full-pipeline payload → static HTML
 │   ├── render_scan.py                  # scan scores → static HTML
 │   └── check_workspace.py              # validates run output against the contract
@@ -228,6 +308,7 @@ for a log that survives across processes. A plain `score.py` run costs 3 calls; 
 │   ├── API_SETUP.md                    # FMP and Toss setup, coverage matrix
 │   ├── RUN_COST.md                     # measured tokens and API calls per run
 │   ├── METHODOLOGY.md                  # how a judgment is actually produced
+│   ├── EVENT_STRUCTURE.md              # what the indicators can and cannot do
 │   └── HARNESS_DESIGN.md               # architecture and data contracts
 └── CLAUDE.md                           # trigger pointers and change log
 ```
