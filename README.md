@@ -292,6 +292,7 @@ for a log that survives across processes. A plain `score.py` run costs 3 calls; 
 │   ├── render_scan.py                  # scan scores → static HTML
 │   └── check_workspace.py              # validates run output against the contract
 ├── .claude/
+│   ├── hooks/                          # run the checks without being asked
 │   ├── agents/                         # 15 specialised agent definitions
 │   └── skills/
 │       ├── etf-discovery-orchestrator/ # main entry point, 13-phase pipeline
@@ -383,6 +384,28 @@ Details: [docs/HARNESS_DESIGN.md](docs/HARNESS_DESIGN.md). What it costs to run:
 [docs/RUN_COST.md](docs/RUN_COST.md) — measured across all ten agent types, plus the
 optimisations that were tried and did not work.
 
+## The checks run themselves
+
+Every tool here ships a self-check, and the compliance rules ship a scanner for
+recommendation language. Until recently both only ran when the model remembered to
+call them — the weakest possible enforcement, since the run that most needs checking
+is the run where attention has already slipped.
+
+`.claude/hooks/after_edit.py` is wired as a `PostToolUse` hook on `Write` and `Edit`:
+
+```
+tools/*.py edited   ->  run that file's self-check
+report .md written  ->  scan it for recommendation language
+```
+
+A failure exits 2, which returns the message to Claude as feedback rather than to you
+as an error. Everything else exits silently — a hook that chatters gets switched off.
+A bug in the hook itself never blocks work.
+
+The self-check that matters most is `eventstudy.py`'s: it rebuilds a past-dated
+indicator, poisons the latest bar, and asserts nothing changed. Future data leaking
+into a past date is the standard way a backtest flatters itself.
+
 ## Design principles
 
 - **Scores come from scripts, explanations come from the model.** If the model picks
@@ -419,6 +442,8 @@ Pattern contributions are especially welcome — but a new pattern needs a
 
 Repository structure and documentation layout follow
 [revfactory/webtoon-harness](https://github.com/revfactory/webtoon-harness).
+The hook design — running the repo's own checks on edit rather than on request —
+follows [wnghdcjfe/stock-report-harness](https://github.com/wnghdcjfe/stock-report-harness).
 
 ## License
 
